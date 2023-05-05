@@ -181,7 +181,7 @@ def write_jira_command_file( line, if_result, result_fi_na , user , server, apik
         file_content = file_content +'    fileFa.close()\n'
     return file_content
 
-def write_request_jira_file( line, if_result, result_fi_na ):
+def write_request_jira_file( line, if_result, result_fi_na ):#
     """Specific Jira command, will be the content on a python file made with python requests.
         not possible to run Jira commands when you launch Maya with Gearbox launcher.
     Args:
