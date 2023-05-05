@@ -40,7 +40,7 @@ class JiraQueries():
         options = {'server': server}
         return JIRA(options, basic_auth=( user, apikey ))
 
-    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, pyStAl = True):
+    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, API_KEY, pyStAl = True ):
         """
         Args:
             user ([str]): [ user email jira login]
@@ -53,7 +53,7 @@ class JiraQueries():
         """
         if pyStAl == False:
             jira = self.jira_connection( user, server, apikey)
-            issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user) )#status = 'User Acceptance'")
+            issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user, API_KEY) )#status = 'User Acceptance'")
             issue_dicc_ls = []
             for issue in issues_ls:
                 main_args_issue_dicc = {}
@@ -93,12 +93,12 @@ class JiraQueries():
             line = line + '        main_args_issue_dicc[de.assignee] = str(assignee)\n    main_args_issue_dicc[de.spec] = "%s" +"/browse/"+str(issue.key)\n' %server
             line = line + '    main_args_issue_dicc[de.id] = str(issue.key)\n'
             line = line + '    %s.append ( main_args_issue_dicc )\n' %de.ls_ji_result
-            file_content = hlp.write_jira_command_file ( line , True, 'task_dicc_request.json', user, server, de.MASTER_API_KEY)
+            file_content = hlp.write_jira_command_file ( line , True, 'task_dicc_request.json', user, server, API_KEY)
             hlp.create_python_file ('get_task_dicc', file_content)
             hlp.run_py_stand_alone( 'get_task_dicc' )
             return hlp.json2dicc_load( de.PY_PATH  + 'task_dicc_request.json')[de.ls_ji_result]
 
-    def get_issues_by_status(self, user, server, apikey, status, pyStAl = True):
+    def get_issues_by_status(self, user, server, apikey, status, API_KEY, pyStAl = True):
         """query issues setted previusly with some status
         Args:
             user ([str]): [user email jira login]
@@ -114,12 +114,12 @@ class JiraQueries():
             return issues_ls
         else:
             line =   'issues_ls = jira.search_issues (jql_str = "status = %s"\n' %( '"'+status +'"' )
-            file_content = hlp.write_jira_command_file ( line , True, 'get_issue_by_status.json', user, server, de.MASTER_API_KEY)
+            file_content = hlp.write_jira_command_file ( line , True, 'get_issue_by_status.json', user, server, API_KEY)
             hlp.create_python_file ('get_issue_by_status', file_content)
             hlp.run_py_stand_alone( 'get_issue_by_status' )
             return hlp.json2dicc_load( de.PY_PATH  + 'get_issue_by_status.json')[de.ls_ji_result]
 
-    def get_all_statuses_types( self ,user, server, apikey , pyStAl = True ):
+    def get_all_statuses_types( self ,user, server, apikey ,pyStAl = True ):
         """get all possibles jira status types
         Args:
             user ([str]): [user email jira login]
@@ -135,7 +135,7 @@ class JiraQueries():
             return status_type
         else:
             line = 'result = jira.statuses()\n%s = [str(st) for st in result]\n' %de.ls_ji_result 
-            file_content = hlp.write_jira_command_file ( line , True, 'status_request.json', user, server, de.MASTER_API_KEY)
+            file_content = hlp.write_jira_command_file ( line , True, 'status_request.json', user, server, apikey)
             hlp.create_python_file ('get_status_types', file_content)
             hlp.run_py_stand_alone( 'get_status_types' )
             return hlp.json2dicc_load( de.PY_PATH  + 'status_request.json')[de.ls_ji_result]
@@ -163,7 +163,7 @@ class JiraQueries():
             line = line +  'try:\n'
             line = line +  '    jira.transition_issue(issue, transition= "{status}")\n    {var} = "{status}"\n'.format( status = new_status , var = de.ls_ji_result )
             line = line +  'except Exception:\n    %s = "None"\n' %( de.ls_ji_result )
-            file_content = hlp.write_jira_command_file ( line , True, 'jira_request.json', user, server, de.MASTER_API_KEY)
+            file_content = hlp.write_jira_command_file ( line , True, 'jira_request.json', user, server, apikey)
             hlp.create_python_file ('change_status', file_content)
             hlp.run_py_stand_alone( 'change_status' )
             return hlp.json2dicc_load( de.PY_PATH  + 'jira_request.json')[de.ls_ji_result]

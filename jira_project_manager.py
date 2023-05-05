@@ -1,11 +1,13 @@
 import sys
+import webbrowser
+import os
+import time
+from threading import Thread
 from PySide2.QtUiTools import QUiLoader
 from PySide2 import QtCore
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-import webbrowser
-import os
-import time
+
 try:
 	import importlib
 except Exception:
@@ -56,9 +58,13 @@ class MyMainWindow(QMainWindow):
         """Initializing functions, var and features.
         """
         self.get_master_creds()
+        #procees = ThreadReturn(target=self.get_master_creds ) #, args=(, ))
+        #procees.start()
         self.jira_m = jq.JiraQueries()
         self.load_main_vars()
         self.load_project_combo()
+        #while procees.join() == None:
+        #    time.sleep(0.2)
         self.set_logged_data_on_combo( self.ui.comboB_projects, self.PROJECT_KEY)
         self.load_workspace_combo()
         self.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
@@ -87,7 +93,7 @@ class MyMainWindow(QMainWindow):
         goo_sheet = gs.GoogleSheetRequests()
         dicc = goo_sheet.get_master_credentials()[0]
         self.MASTER_USER = dicc['master_user']
-        self.MASTER_APIKEY = dicc['master_pass']
+        self.MASTER_API_KEY = dicc['master_pass']
 
     def get_api_token_help(self):
         """Browse help for get jira api token
@@ -99,7 +105,7 @@ class MyMainWindow(QMainWindow):
         """populate projects combob.
         """
         self.ui.comboB_projects.clear()
-        proj_ls_diccs = self.jira_m.get_projects( de.SERVER , self.MASTER_USER, self.MASTER_APIKEY )
+        proj_ls_diccs = self.jira_m.get_projects( de.SERVER , self.MASTER_USER, self.MASTER_API_KEY )
         for proj in ['None']+proj_ls_diccs:
             self.ui.comboB_projects.addItem(str(proj))
 
@@ -252,7 +258,7 @@ class table_features( ):#QWidget ):
         Returns:
             [ls]: [list of jira issues]
         """
-        self_tasks = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY )
+        self_tasks = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY )
         return self_tasks
 
     def  populate_table(self, table):
@@ -263,7 +269,8 @@ class table_features( ):#QWidget ):
         table.clear()
         try:
             tasks_ls_diccs = self.get_self_tasks( )
-        except:
+        except Exception as err:
+            print (err)
             tasks_ls_diccs = []
         for i, header in enumerate (de.HEADER_LS):
             locals()["item"+ str(i)] = QTableWidgetItem(header)
@@ -522,3 +529,36 @@ class getThumbnClass(QLabel):
         super(getThumbnClass, self).__init__(parent)
         pic = QPixmap( path ).scaled(QtCore.QSize(size[0],size[1]), QtCore.Qt.KeepAspectRatio)
         self.setPixmap(pic)
+
+
+if str(sys.version).startswith('2'): #ThreadReturnPy2
+	class ThreadReturn(Thread):
+		def __init__(self, group=None, target=None, name=None,args=(), kwargs={}, Verbose=None):
+			Thread.__init__(self, group, target, name, args, kwargs) #, Verbose
+			self._return = None
+		def run(self):
+			try:
+				print (self._Thread__target)
+			except Exception:
+				self._Thread__target = None
+			if self._Thread__target is not None:
+				self._return = self._Thread__target(*self._Thread__args,
+												   **self._Thread__kwargs)
+		def join(self):
+			Thread.join(self)
+			return self._return
+
+elif str(sys.version).startswith('3'):
+	class ThreadReturn(Thread): #ThreadReturnPy3
+		def __init__(self, group=None, target=None, name=None,
+					args=(), kwargs={}, Verbose=None):
+			Thread.__init__(self, group, target, name, args, kwargs)
+			self._return = None
+		def run(self):
+			print(type(self._target))
+			if self._target is not None:
+				self._return = self._target(*self._args,
+													**self._kwargs)
+		def join(self, *args):
+			Thread.join(self, *args)
+			return self._return
