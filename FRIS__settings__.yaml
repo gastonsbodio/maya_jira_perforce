@@ -1,0 +1,4 @@
+### specific FRIS settings (path, files)
+Paths:
+    Rig_Char_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Rig.ma
+    Char_Thumb_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/{char_na}_thumbnail.jpg
