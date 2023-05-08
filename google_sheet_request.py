@@ -40,8 +40,11 @@ class GoogleSheetRequests():
         
 
 class GoogleDriveQuery():
-
     def login(self):
+        """Creates a google drive object ( with the proper log in )able to do queries
+        Returns:
+            [type]: [description]
+        """
         gauth = GoogleAuth( )
         GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = de.PY2_PACKAGES.replace('\\','/') + "/creds/client_secrets.json"
         c = gauth.LoadCredentialsFile( de.PY2_PACKAGES.replace('\\','/')  + "/creds/mycreds.txt" )
@@ -58,20 +61,43 @@ class GoogleDriveQuery():
         return GoogleDrive(gauth)
 
     def dowload_fi(self, googleFi, targuet_full_path):
+        """Download to local a file, with the given google file object.
+        Args:
+            googleFi ([google file obj]): [description]
+            targuet_full_path ([str]): [local target full path]
+        """
         googleFi.GetContentFile( targuet_full_path )
         
     def listContentFold( self, credenciales, idFather ):
+        """
+        Args:
+            credenciales ([google drive obj]): [given logged in google drive obj]
+            idFather ([str]): [id code associated to a google file or folder]
+        Returns:
+            [ls]: [list of google files objects]
+        """
         query = " '%%%s%%' in parents and trashed=false"%(idFather)
         query = query.replace('%','')
         contentLs = credenciales.ListFile({'q':query}).GetList()
         return contentLs
         
     def list_goog_root_fol_fi( self, credentials ):
-        #### para listar los folders o archivos raices
+        """List and return all files or folder on google drive top level.
+        Args:
+            credenciales ([google drive obj]): [given logged in google drive obj]
+        Returns:
+            [ls]: [list of google files objects]
+        """
         top_list = credentials.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
         return top_list
 
     def find_goo_tools_fol( self , credentials ):
+        """it uses tools files content folder name to get this google folder obj.
+        Args:
+            credenciales ([google drive obj]): [given logged in google drive obj]
+        Returns:
+            [google folder obj]: [description]
+        """
         for goo_obj in self.list_goog_root_fol_fi( credentials ):
             for dicc_key in goo_obj:
                 try:
@@ -82,15 +108,24 @@ class GoogleDriveQuery():
         return None
     
     def update_tools (self):
+        """log in list tool files and download them to local.
+        """
         credentials = self.login()
         goo_obj_tool_fol = self.find_goo_tools_fol(credentials)
         tool_fi_ls = self.listContentFold(  credentials , goo_obj_tool_fol['id'] )
+        if not os.path.exists( de.SCRIPT_FOL.replace('\\','/')  ):
+            try:
+                os.makedirs( de.SCRIPT_FOL.replace('\\','/') )
+            except Exception:
+                pass
         for goo_fi in tool_fi_ls:
             self.dowload_fi ( goo_fi, de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title']   )
             print ( ' downloading:      ' + goo_fi['title'] )
 
 
-    def shelf_butt_launch_update_tools(self):
+    def shelf_butt_launch_update_tools():
+        """is not a real function, it is just to preserve the code to call -update tools-
+        """
         import sys
         import ctypes
         from ctypes.wintypes import MAX_PATH
@@ -100,13 +135,11 @@ class GoogleDriveQuery():
             USER_DOC = buf.value
         SCRIPT_FOL = USER_DOC + "\\prod_manager\\jira_manager"
         sys.path.append( SCRIPT_FOL )
-
         import helper as hlp
         try:
             reload(hlp)
         except Exception:
             importlib.reload(hlp)
-
         file_content = hlp.write_down_tools ( )
         hlp.create_python_file ('update_tools', file_content)
         hlp.run_py_stand_alone( 'update_tools', True)

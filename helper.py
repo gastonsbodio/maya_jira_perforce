@@ -109,7 +109,7 @@ def run_py_stand_alone( python_file_na , with_console = False):
     if with_console == False:
         subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] , startupinfo = si )
     else:
-        subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] )
+        subprocess.Popen( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] )
 
 def write_perforce_command_file ( line, if_result, result_fi_na):
     """Specific Perforce command, will be the content on a python file
@@ -231,7 +231,7 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
     #file_content = file_content + 'except Exception:\n'
     #file_content = file_content + '    pass\n'
     #file_content = file_content + 'try:\n'
-    file_content = file_content + '    reload( de )\n'
+    file_content = file_content + 'reload( de )\n'
     #file_content = file_content + 'except Exception:\n'
     #file_content = file_content + '    importlib.reload(de)\n'
     file_content = file_content + 'sys.path.append( de.PY2_PACKAGES )\n'
@@ -252,6 +252,11 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
 
 
 def write_down_tools():
+    """Specific Google Drive command, will be the content on a python file.
+        not possible to run Google Drive commands when you launch Maya with Gearbox launcher.
+    Returns:
+        [str]: [python script command content formated]
+    """
     file_content =                'import sys\n'
     file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
     file_content = file_content + 'import google_sheet_request as gs\n'

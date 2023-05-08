@@ -1,3 +1,26 @@
+####          maya launch      ####
+#import sys
+#import ctypes
+#from ctypes.wintypes import MAX_PATH
+#dll = ctypes.windll.shell32
+#buf = ctypes.create_unicode_buffer(MAX_PATH + 1)
+#if dll.SHGetSpecialFolderPathW(None, buf, 0x0005, False):
+#	USER_DOC = buf.value
+#SCRIPT_FOL = USER_DOC + "\\prod_manager\\jira_manager"
+#sys.path.append(SCRIPT_FOL)
+#
+#try:
+#	import importlib
+#except Exception:
+#    pass
+#import jira_project_manager as jiraM
+#try:
+#	reload(jiraM)
+#except Exception:
+#    importlib.reload( de )
+#widget = jiraM.MyMainWindow()
+#widget.ui.show()
+
 import sys
 import webbrowser
 import os
@@ -51,7 +74,6 @@ class MyMainWindow(QMainWindow):
         
         self.LOCAL_ROOT = 'None'
         self.DEPOT_ROOT = 'None'
-        #lineEd_jira_user
         self.initialize_widget_conn()
 
     def initialize_widget_conn(self):
@@ -90,6 +112,8 @@ class MyMainWindow(QMainWindow):
         self.ui.actionGet_Jira_Api_Key.triggered.connect(self.get_api_token_help)
 
     def get_master_creds( self ):
+        """initialize master jira credentials.
+        """
         goo_sheet = gs.GoogleSheetRequests()
         dicc = goo_sheet.get_master_credentials()[0]
         self.MASTER_USER = dicc['master_user']
@@ -328,19 +352,9 @@ class table_features( ):#QWidget ):
         table.customContextMenuRequested.connect( self.menues_asset_table )
         table.setEditTriggers( QTableWidget.NoEditTriggers )
 
-        #table.setMouseTracking(True)
-        #table.connect( self.handleItemEntered )
-        #model = QStandardItemModel( table )
-        #for text in 'One Two Three Four Five'.split():
-        #    model.appendRow(QStandardItem(text))
-        #table.setModel(model)
-
-    def handleItemEntered(self, index):
-        if index.isValid():
-            QToolTip.showText(  QCursor.pos(),  index.data(),
-                self.current_table.viewport(),  self.view.visualRect(index) )
-
     def refresh_tables(self):
+        """Refresh given tables
+        """
         table_ls= [ self.current_table ]#, self.ui.table_animTasks ]
         for table in table_ls:
             self.populate_table(table)
@@ -516,7 +530,6 @@ class table_features( ):#QWidget ):
             if actionLink.text() == "open issue link":
                 webbrowser.open(link, new=2) 
     
-
 
 class getThumbnClass(QLabel):
     def __init__(self, parent=None, path=None, size=(0,0)):
