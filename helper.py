@@ -95,7 +95,7 @@ def solve_path( is_local, asset_na, key_path,
     else:
         return depot_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
 
-def run_py_stand_alone( python_file_na ):
+def run_py_stand_alone( python_file_na , with_console = False):
     """create a bat file witch run python stand alone
     Args:
         python_file_na ([str]): [python file path]
@@ -106,7 +106,10 @@ def run_py_stand_alone( python_file_na ):
         fileFa.write( batPythonExec )
         fileFa.close()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] , startupinfo=si)
+    if with_console == False:
+        subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] , startupinfo = si )
+    else:
+        subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] )
 
 def write_perforce_command_file ( line, if_result, result_fi_na):
     """Specific Perforce command, will be the content on a python file
@@ -223,14 +226,14 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
     file_content = file_content + 'import json\n'
     file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
     file_content = file_content + 'import definitions as de\n'
-    file_content = file_content + 'try:\n'
-    file_content = file_content + '	import importlib\n'
-    file_content = file_content + 'except Exception:\n'
-    file_content = file_content + '    pass\n'
-    file_content = file_content + 'try:\n'
+    #file_content = file_content + 'try:\n'
+    #file_content = file_content + '	import importlib\n'
+    #file_content = file_content + 'except Exception:\n'
+    #file_content = file_content + '    pass\n'
+    #file_content = file_content + 'try:\n'
     file_content = file_content + '    reload( de )\n'
-    file_content = file_content + 'except Exception:\n'
-    file_content = file_content + '    importlib.reload(de)\n'
+    #file_content = file_content + 'except Exception:\n'
+    #file_content = file_content + '    importlib.reload(de)\n'
     file_content = file_content + 'sys.path.append( de.PY2_PACKAGES )\n'
     file_content = file_content + 'import oauth2client.service_account as ServiceAcc\n'
     file_content = file_content + 'import gspread\n'
@@ -247,6 +250,15 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
         file_content = file_content +'    fileFa.close()\n'
     return file_content
 
+
+def write_down_tools():
+    file_content =                'import sys\n'
+    file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
+    file_content = file_content + 'import google_sheet_request as gs\n'
+    file_content = file_content +'reload( gs )\n'
+    file_content = file_content +'goo_dri = gs.GoogleDriveQuery()\n'
+    file_content = file_content +'goo_dri.update_tools()\n'
+    return file_content
 
 def create_python_file( python_file_na, python_file_content ):
     """Jus create python file with a given content

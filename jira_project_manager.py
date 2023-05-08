@@ -53,8 +53,6 @@ class MyMainWindow(QMainWindow):
         self.DEPOT_ROOT = 'None'
         #lineEd_jira_user
         self.initialize_widget_conn()
-        goo_dri = gs.GoogleDriveQuery()
-        goo_dri.update_tools()
 
     def initialize_widget_conn(self):
         """Initializing functions, var and features.

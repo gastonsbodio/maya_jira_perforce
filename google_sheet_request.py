@@ -14,12 +14,14 @@ except Exception:
     importlib.reload( de )
     importlib.reload( hlp )
     
-
 sys.path.append( de.PY2_PACKAGES )
-import pydrive
-from pydrive import auth
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+try:
+    import pydrive
+    from pydrive import auth
+    from pydrive.auth import GoogleAuth
+    from pydrive.drive import GoogleDrive
+except Exception:
+    pass
         
 class GoogleSheetRequests():
     def get_master_credentials( self ):
@@ -84,5 +86,27 @@ class GoogleDriveQuery():
         goo_obj_tool_fol = self.find_goo_tools_fol(credentials)
         tool_fi_ls = self.listContentFold(  credentials , goo_obj_tool_fol['id'] )
         for goo_fi in tool_fi_ls:
-            goo_fi.dowload_fi ( de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title']   )
+            self.dowload_fi ( goo_fi, de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title']   )
             print ( ' downloading:      ' + goo_fi['title'] )
+
+
+    def shelf_butt_launch_update_tools(self):
+        import sys
+        import ctypes
+        from ctypes.wintypes import MAX_PATH
+        dll = ctypes.windll.shell32
+        buf = ctypes.create_unicode_buffer(MAX_PATH + 1)
+        if dll.SHGetSpecialFolderPathW(None, buf, 0x0005, False):
+            USER_DOC = buf.value
+        SCRIPT_FOL = USER_DOC + "\\prod_manager\\jira_manager"
+        sys.path.append( SCRIPT_FOL )
+
+        import helper as hlp
+        try:
+            reload(hlp)
+        except Exception:
+            importlib.reload(hlp)
+
+        file_content = hlp.write_down_tools ( )
+        hlp.create_python_file ('update_tools', file_content)
+        hlp.run_py_stand_alone( 'update_tools', True)

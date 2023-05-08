@@ -40,7 +40,7 @@ class JiraQueries():
         options = {'server': server}
         return JIRA(options, basic_auth=( user, apikey ))
 
-    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, API_KEY, pyStAl = True ):
+    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, pyStAl = True ):
         """
         Args:
             user ([str]): [ user email jira login]
@@ -53,7 +53,7 @@ class JiraQueries():
         """
         if pyStAl == False:
             jira = self.jira_connection( user, server, apikey)
-            issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user, API_KEY) )#status = 'User Acceptance'")
+            issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user, apikey) )#status = 'User Acceptance'")
             issue_dicc_ls = []
             for issue in issues_ls:
                 main_args_issue_dicc = {}
@@ -93,7 +93,7 @@ class JiraQueries():
             line = line + '        main_args_issue_dicc[de.assignee] = str(assignee)\n    main_args_issue_dicc[de.spec] = "%s" +"/browse/"+str(issue.key)\n' %server
             line = line + '    main_args_issue_dicc[de.id] = str(issue.key)\n'
             line = line + '    %s.append ( main_args_issue_dicc )\n' %de.ls_ji_result
-            file_content = hlp.write_jira_command_file ( line , True, 'task_dicc_request.json', user, server, API_KEY)
+            file_content = hlp.write_jira_command_file ( line , True, 'task_dicc_request.json', user, server, apikey)
             hlp.create_python_file ('get_task_dicc', file_content)
             hlp.run_py_stand_alone( 'get_task_dicc' )
             return hlp.json2dicc_load( de.PY_PATH  + 'task_dicc_request.json')[de.ls_ji_result]
