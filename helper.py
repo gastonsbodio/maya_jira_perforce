@@ -221,7 +221,7 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
     """
     file_content =                'import sys\n'
     file_content = file_content + 'import json\n'
-    file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL#.replace( "/" , "\\\\" )
+    file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
     file_content = file_content + 'import definitions as de\n'
     file_content = file_content + 'try:\n'
     file_content = file_content + '	import importlib\n'

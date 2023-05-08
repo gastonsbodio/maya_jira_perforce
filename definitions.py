@@ -35,6 +35,8 @@ MANAGE_PROD_UI = 'management_tool.ui'
 #MASTER_API_KEY = ""
 
 GOOGLE_SHET_DATA_NA = "jira_manager_data"
+GOOG_CONTENT_TOOLS_FOL = "jira_manager"
+
 ## asset table vars
 assignee = 'Assignee'
 reporter = 'Reporter'
