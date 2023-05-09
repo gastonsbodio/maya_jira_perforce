@@ -246,3 +246,17 @@ class JiraQueries():
             file_content = hlp.write_jira_command_file ( line , False, '', user, server, apikey)
             hlp.create_python_file ('generate_labels', file_content)
             hlp.run_py_stand_alone( 'generate_labels' )
+
+    def create_issue( self, user, server, apikey, proj_key ,summary , description, type):
+        jira = self.jira_connection(user, server, apikey)
+        issue_dict = {
+            'project': {'key': proj_key},
+            'summary': summary,
+            'description': description,
+            'issuetype': {'name': type},
+        }
+        new_issue = jira.create_issue( fields = issue_dict )
+        
+    def issue_types_for_project( self, user, server, apikey ):
+        jira = self.jira_connection( user, server, apikey )
+        jira.issue_types_for_project( proj_key ) 

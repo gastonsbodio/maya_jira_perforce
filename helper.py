@@ -260,9 +260,9 @@ def write_down_tools():
     file_content =                'import sys\n'
     file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
     file_content = file_content + 'import google_sheet_request as gs\n'
-    file_content = file_content +'reload( gs )\n'
-    file_content = file_content +'goo_dri = gs.GoogleDriveQuery()\n'
-    file_content = file_content +'goo_dri.update_tools()\n'
+    file_content = file_content + 'reload( gs )\n'
+    file_content = file_content + 'goo_dri = gs.GoogleDriveQuery()\n'
+    file_content = file_content + 'goo_dri.update_tools()\n'
     return file_content
 
 def create_python_file( python_file_na, python_file_content ):

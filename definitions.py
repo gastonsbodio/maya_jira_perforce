@@ -69,6 +69,7 @@ dicc_result = 'dicc_result'
 ls_result = 'ls_result'
 
 ## jira vars
+issue_type_asset = 'Asset'
 dicc_ji_result = 'dicc_result'
 ls_ji_result = 'ls_result'
 key_connected = 'keyConnected'

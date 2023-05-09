@@ -17,7 +17,7 @@
 #try:
 #	reload(jiraM)
 #except Exception:
-#    importlib.reload( de )
+#    importlib.reload( jiraM )
 #widget = jiraM.MyMainWindow()
 #widget.ui.show()
 
@@ -177,7 +177,6 @@ class MyMainWindow(QMainWindow):
             self.USER = str( dicc['emailAddress'] )
             self.PROJECT_KEY = str( dicc['project'] )
             self.APIKEY = str( dicc['apikey'] )
-
         if signal == 1 :
             dicc['project'] = str( self.ui.comboB_projects.currentText() )
             self.PROJECT_KEY = dicc['project']
