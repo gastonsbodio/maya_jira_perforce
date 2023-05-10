@@ -64,16 +64,6 @@ class MyMainWindow(QMainWindow):
         uifile = QtCore.QFile( de.SCRIPT_FOL.replace('\\','/') +'/'+ de.MANAGE_PROD_UI)
         uifile.open(QtCore.QFile.ReadOnly)
         self.ui = loader.load( uifile, ev.getWindow(QWidget) )
-        self.USER = 'None'
-        self.APIKEY = 'None'
-        self.PROJECT_KEY = 'None'
-        
-        self.PERF_USER = 'None'
-        self.PERF_WORKSPACE = 'None'
-        self.PERF_SERVER = 'None'
-        
-        self.LOCAL_ROOT = 'None'
-        self.DEPOT_ROOT = 'None'
         self.initialize_widget_conn()
 
     def initialize_widget_conn(self):
@@ -83,7 +73,9 @@ class MyMainWindow(QMainWindow):
         #procees = ThreadReturn(target=self.get_master_creds ) #, args=(, ))
         #procees.start()
         self.jira_m = jq.JiraQueries()
-        self.load_main_vars()
+        self.USER , self.APIKEY, self.PROJECT_KEY  = load_jira_vars()
+        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
+        self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
         self.load_project_combo()
         #while procees.join() == None:
         #    time.sleep(0.2)
@@ -101,9 +93,7 @@ class MyMainWindow(QMainWindow):
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
         self.ui.comboB_workSpace.currentIndexChanged.connect(lambda: self.perf_combo_change_ac(3))
 
-        self.t_fea = table_features( self.USER, self.APIKEY , self.PROJECT_KEY,
-                                    self.LOCAL_ROOT, self.DEPOT_ROOT, self.PERF_SERVER, 
-                                    self.PERF_USER, self.PERF_WORKSPACE, self.PROJ_SETTINGS  )
+        self.t_fea = table_features(  )
         
         self.t_fea.populate_table( self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
@@ -136,13 +126,19 @@ class MyMainWindow(QMainWindow):
     def set_roots(self):
         """instancing local root and depot root related with the choosen workspace.
         """
+        dicc = {}
         for proj in self.worksp_ls:
             try:
                 if str(proj['client']) == self.PERF_WORKSPACE:
                     self.LOCAL_ROOT = str(proj['Root']).replace('\\','/')
+                    dicc['local_root'] = self.LOCAL_ROOT
                     self.DEPOT_ROOT = str(proj['Stream']).replace('\\','/')
+                    dicc['depot_root'] = self.DEPOT_ROOT
+                    break
             except:
                 pass
+        hlp.metadata_dicc2json( de.TEMP_FOL+de.ROOTS_METAD_FI_NA , dicc)
+
 
     def load_workspace_combo(self):
         """populate workspace combob.
@@ -166,20 +162,16 @@ class MyMainWindow(QMainWindow):
             signal ([int]): [number for distinguish witch particular widget change you want to work with]
         """
         dicc = hlp.json2dicc_load( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA )
-        if dicc =={}:
-            self.USER = 'None'
-            dicc['project'] = 'None'
-            self.PROJECT_KEY = 'None'
-            dicc['emailAddress'] = 'None'
-            self.APIKEY = 'None'
-            dicc['apikey'] = 'None'
+        if dicc!={}:
+            self.USER , self.APIKEY, self.PROJECT_KEY = load_jira_vars()
         else:
-            self.USER = str( dicc['emailAddress'] )
-            self.PROJECT_KEY = str( dicc['project'] )
-            self.APIKEY = str( dicc['apikey'] )
+            dicc['project'] = 'None'
+            dicc['emailAddress'] = 'None'
+            dicc['apikey'] = 'None'
         if signal == 1 :
             dicc['project'] = str( self.ui.comboB_projects.currentText() )
             self.PROJECT_KEY = dicc['project']
+            self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         elif signal == 2:
             dicc['emailAddress'] = str( self.ui.lineEd_jira_user.text() )
             self.USER = dicc['emailAddress']
@@ -200,17 +192,11 @@ class MyMainWindow(QMainWindow):
         """
         dicc = hlp.json2dicc_load( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA )
         if dicc =={}:
-            self.PERF_USER = 'None'
             dicc['perf_user'] = 'None'
-            self.PERF_SERVER = 'None'
             dicc['perf_server'] = 'None'
-            self.PERF_WORKSPACE = 'None'
             dicc['perf_workspace'] = 'None'
         else:
-            self.PERF_USER = str(dicc['perf_user'])
-            self.PERF_SERVER = str(dicc['perf_server'])
-            self.PERF_WORKSPACE = str(dicc['perf_workspace'])
-            
+            self.PERF_USER ,self.PERF_SERVER ,self.PERF_WORKSPACE = load_perf_vars()
         if signal == 1:
             dicc['perf_user'] = str(self.ui.lineEd_perforce_user.text() )
             self.PERF_USER = dicc['perf_user']
@@ -225,29 +211,6 @@ class MyMainWindow(QMainWindow):
         hlp.metadata_dicc2json( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA , dicc)
         self.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
 
-    def load_main_vars(self):
-        """instancing loging vars for make it run Jira and Perforce queries
-        """
-        dicc = hlp.json2dicc_load( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA )
-        if dicc!= {}:
-            self.USER = str( dicc['emailAddress'] ) #'user'])
-            self.APIKEY = str( dicc['apikey'] )
-            self.PROJECT_KEY = str( dicc['project'] )
-        else:
-            self.USER = 'None'
-            self.APIKEY = 'None'
-            self.PROJECT_KEY = 'None'
-            
-        dicc = hlp.json2dicc_load( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA )
-        if dicc!= {}:
-            self.PERF_USER = str( dicc['perf_user'] ) #'user'])
-            self.PERF_WORKSPACE = str( dicc['perf_workspace'] )
-            self.PERF_SERVER = str( dicc['perf_server'] )
-        else:
-            self.PERF_USER = 'None'
-            self.PERF_SERVER = 'None'
-            self.PERF_WORKSPACE = 'None'
-
     def set_logged_data_on_combo(self, comboB, data2check):
         """Set previus selected item on this particular combobox.
         Args:
@@ -260,21 +223,55 @@ class MyMainWindow(QMainWindow):
                 comboB.setCurrentIndex(idx)
                 break
 
+def load_jira_vars():
+    """instancing loging vars for make it run Jira queries.
+    """
+    dicc = hlp.json2dicc_load( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA )
+    if dicc != {}:
+        USER = str( dicc['emailAddress'] ) 
+        APIKEY = str( dicc['apikey'] )
+        PROJECT_KEY = str( dicc['project'] )
+    else:
+        USER = 'None'
+        APIKEY = 'None'
+        PROJECT_KEY = 'None'
+    return  USER , APIKEY, PROJECT_KEY
+
+def load_perf_vars():
+    """instancing loging vars for make it run  Perforce queries.
+    """    
+    dicc = hlp.json2dicc_load( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA )
+    if dicc != {}:
+        PERF_USER = str( dicc['perf_user'] ) #'user'])
+        PERF_WORKSPACE = str( dicc['perf_workspace'] )
+        PERF_SERVER = str( dicc['perf_server'] )
+    else:
+        PERF_USER = 'None'
+        PERF_WORKSPACE = 'None'
+        PERF_SERVER = 'None'
+    return  PERF_USER ,PERF_SERVER ,PERF_WORKSPACE 
+
+def load_root_vars():
+    """instancing roots vars for path building.
+    """    
+    dicc = hlp.json2dicc_load( de.TEMP_FOL+de.ROOTS_METAD_FI_NA )
+    if dicc != {}:
+        LOCAL_ROOT = str( dicc['local_root'] )
+        DEPOT_ROOT = str( dicc['depot_root'] )
+    else:
+        LOCAL_ROOT = 'None'
+        DEPOT_ROOT = 'None'
+    return  LOCAL_ROOT ,DEPOT_ROOT 
+
 class table_features( ):#QWidget ):
     """All Table functionality
     """
-    def __init__(self, jira_user, apikey , project_key, local_root, depot_root,
-                perf_server, perf_user, perf_workspace , proj_settings ):
+    def __init__(self):
         self.jira_m = jq.JiraQueries()
-        self.USER = jira_user
-        self.APIKEY = apikey
-        self.PROJECT_KEY = project_key
-        self.LOCAL_ROOT = local_root
-        self.DEPOT_ROOT = depot_root
-        self.PERF_SERVER = perf_server
-        self.PERF_USER = perf_user
-        self.PERF_WORKSPACE = perf_workspace
-        self.PROJ_SETTINGS = proj_settings
+        self.USER , self.APIKEY, self.PROJECT_KEY  = load_jira_vars()
+        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
+        self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
+        self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
     
     def get_self_tasks(self):
         """Query Jira for get own assigned issues.
@@ -289,6 +286,10 @@ class table_features( ):#QWidget ):
         Args:
             table ([qtablewid]): [description]
         """
+        self.USER , self.APIKEY, self.PROJECT_KEY= load_jira_vars()
+        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
+        self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
+        self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         table.clear()
         try:
             tasks_ls_diccs = self.get_self_tasks( )

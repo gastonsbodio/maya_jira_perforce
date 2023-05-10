@@ -48,8 +48,6 @@ def json2dicc_load(path):
         with open( path) as fileFa:
             dicc = json.load(fileFa)
             fileFa.close()
-    else:
-        print('no json file found')
     return dicc
 
 def get_yaml_fil_data(path):
@@ -60,13 +58,16 @@ def get_yaml_fil_data(path):
         [dicc]: [description]
     """
     data = {}
-    with open(path , "r") as stream:
-        try:
-            data = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
-        stream.close()
-    return data
+    if os.path.isfile( path ):
+        with open(path , "r") as stream:
+            try:
+                data = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+            stream.close()
+        return data
+    else:
+        return None
 
 def separate_path_and_na(full_path):
     """Return separated values on a full path (path and file)
@@ -234,8 +235,9 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
     file_content = file_content + 'reload( de )\n'
     #file_content = file_content + 'except Exception:\n'
     #file_content = file_content + '    importlib.reload(de)\n'
+    file_content = file_content + 'sys.path.append( de.PY_PACK_MOD )\n'
     file_content = file_content + 'sys.path.append( de.PY2_PACKAGES )\n'
-    file_content = file_content + 'import oauth2client.service_account as ServiceAcc\n'
+    file_content = file_content + 'import py2.oauth2client.service_account as ServiceAcc\n'
     file_content = file_content + 'import gspread\n'
     file_content = file_content + 'scope = [ "https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets" ,\n'
     file_content = file_content + '    "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"  ]\n'

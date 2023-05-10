@@ -14,8 +14,9 @@ if dll.SHGetSpecialFolderPathW(None, buf, 0x0005, False):
 	USER_DOC = buf.value
 SCRIPT_FOL = USER_DOC + "\\prod_manager\\jira_manager"
 
-PY2_PACKAGES = USER_DOC + "\\prod_manager\\packages\\py2" 
-PY3_PACKAGES = USER_DOC + "\\prod_manager\\packages\\py3" 
+PY_PACK_MOD = USER_DOC + "\\prod_manager\\packages"
+PY2_PACKAGES = PY_PACK_MOD + "\\py2" 
+PY3_PACKAGES = PY_PACK_MOD + "\\py3" 
 if sys.version_info.major == 2:
 	PY_PACKAGES = PY2_PACKAGES
 elif sys.version_info.major == 3:
@@ -24,6 +25,7 @@ elif sys.version_info.major == 3:
 TEMP_FOL = tempfile.gettempdir().replace("\\","/") + "/"
 LOGIN_METADATA_FI_NA ='login_metadata.json'
 PERF_LOG_METADATA_FI_NA ='perf_log_metadata.json'
+ROOTS_METAD_FI_NA = 'roots_metadata.json'
 SERVER = "https://genvidtech.atlassian.net"
 JIRA_API_TOKEN_HELP = 'https://docs.searchunify.com/Content/Content-Sources/Atlassian-Jira-Confluence-Authentication-Create-API-Token.htm'
 PY_PATH = 'C:/Python27/'

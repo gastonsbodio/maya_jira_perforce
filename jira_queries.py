@@ -253,10 +253,10 @@ class JiraQueries():
             'project': {'key': proj_key},
             'summary': summary,
             'description': description,
-            'issuetype': {'name': type},
+            'issuetype': {'name': '%s' %de.issue_type_asset},
         }
         new_issue = jira.create_issue( fields = issue_dict )
         
-    def issue_types_for_project( self, user, server, apikey ):
+    def issue_types_for_project( self, user, server, apikey , proj_key):
         jira = self.jira_connection( user, server, apikey )
-        jira.issue_types_for_project( proj_key ) 
+        issues_types = jira.issue_types_for_project( proj_key ) 

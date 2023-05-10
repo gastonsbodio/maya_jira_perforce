@@ -13,7 +13,7 @@ try:
 except Exception:
     importlib.reload( de )
     importlib.reload( hlp )
-    
+sys.path.append( de.PY_PACK_MOD )
 sys.path.append( de.PY2_PACKAGES )
 try:
     import pydrive
@@ -35,7 +35,8 @@ class GoogleSheetRequests():
         hlp.run_py_stand_alone( 'google_sheet_query' )
         dicc = hlp.json2dicc_load( de.PY_PATH  + 'google_sheet_query.json')
         os.remove( de.PY_PATH  + 'google_sheet_query.json' )
-        os.remove( de.PY_PATH  + 'google_sheet_query.py' )
+        os.remove( de.PY_PATH  + 'google_sheet_query.py' ) 
+        os.remove( de.PY_PATH  + 'Execute_google_sheet_query.bat' )
         return dicc
         
 
