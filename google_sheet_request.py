@@ -15,13 +15,13 @@ except Exception:
     importlib.reload( hlp )
 sys.path.append( de.PY_PACK_MOD )
 sys.path.append( de.PY2_PACKAGES )
-try:
-    import pydrive
-    from pydrive import auth
-    from pydrive.auth import GoogleAuth
-    from pydrive.drive import GoogleDrive
-except Exception:
-    pass
+#try:
+import py2.pydrive
+from py2.pydrive import auth
+from py2.pydrive.auth import GoogleAuth
+from py2.pydrive.drive import GoogleDrive
+#except Exception as err:
+#    print (err)
         
 class GoogleSheetRequests():
     def get_master_credentials( self ):
@@ -69,7 +69,7 @@ class GoogleDriveQuery():
         """
         googleFi.GetContentFile( targuet_full_path )
         
-    def listContentFold( self, credenciales, idFather ):
+    def listContentFold( self, credenciales, idFather , final_ls = []):
         """
         Args:
             credenciales ([google drive obj]): [given logged in google drive obj]
@@ -80,7 +80,12 @@ class GoogleDriveQuery():
         query = " '%%%s%%' in parents and trashed=false"%(idFather)
         query = query.replace('%','')
         contentLs = credenciales.ListFile({'q':query}).GetList()
-        return contentLs
+        for file in contentLs:
+            if file['mimeType'] == 'application/vnd.google-apps.folder':
+                self.listContentFold( credenciales, file['id'] , final_ls = final_ls)
+            else:
+                final_ls.append( file )
+        return final_ls
         
     def list_goog_root_fol_fi( self, credentials ):
         """List and return all files or folder on google drive top level.
@@ -112,7 +117,7 @@ class GoogleDriveQuery():
         """log in list tool files and download them to local.
         """
         credentials = self.login()
-        goo_obj_tool_fol = self.find_goo_tools_fol(credentials)
+        goo_obj_tool_fol = self.find_goo_tools_fol( credentials )
         tool_fi_ls = self.listContentFold(  credentials , goo_obj_tool_fol['id'] )
         if not os.path.exists( de.SCRIPT_FOL.replace('\\','/')  ):
             try:
@@ -120,8 +125,9 @@ class GoogleDriveQuery():
             except Exception:
                 pass
         for goo_fi in tool_fi_ls:
-            self.dowload_fi ( goo_fi, de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title']   )
-            print ( ' downloading:      ' + goo_fi['title'] )
+            if goo_fi['mimeType'] != 'application/vnd.google-apps.folder':
+                self.dowload_fi ( goo_fi, de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title']   )
+                print ( ' downloading:      ' + goo_fi['title'] )
 
 
     def shelf_butt_launch_update_tools():

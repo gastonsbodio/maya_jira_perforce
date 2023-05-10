@@ -108,9 +108,10 @@ def run_py_stand_alone( python_file_na , with_console = False):
         fileFa.close()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     if with_console == False:
-        subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] , startupinfo = si )
+        subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH.replace('/','\\\\') , python_file_na ) ] , startupinfo = si )
     else:
-        subprocess.Popen( [r'%sExecute_%s.bat'%( de.PY_PATH , python_file_na ) ] )
+        subprocess.Popen( [r'%sExecute_%s.bat'%( de.PY_PATH.replace('/','\\\\')  , python_file_na ) ] )
+    #subprocess.call(["start", 'C:\\Python27\\Execute_google_sheet_query.bat'], shell=True)
 
 def write_perforce_command_file ( line, if_result, result_fi_na):
     """Specific Perforce command, will be the content on a python file
@@ -226,15 +227,11 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
     file_content =                'import sys\n'
     file_content = file_content + 'import json\n'
     file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
+    file_content = file_content +'for path in sys.path:\n'
+    file_content = file_content +'    if "Maya2020" in path or "Maya2021" in path or "Maya2022" in path or "Maya2023" in path:\n'
+    file_content = file_content +'        sys.path.remove(path)\n'
     file_content = file_content + 'import definitions as de\n'
-    #file_content = file_content + 'try:\n'
-    #file_content = file_content + '	import importlib\n'
-    #file_content = file_content + 'except Exception:\n'
-    #file_content = file_content + '    pass\n'
-    #file_content = file_content + 'try:\n'
     file_content = file_content + 'reload( de )\n'
-    #file_content = file_content + 'except Exception:\n'
-    #file_content = file_content + '    importlib.reload(de)\n'
     file_content = file_content + 'sys.path.append( de.PY_PACK_MOD )\n'
     file_content = file_content + 'sys.path.append( de.PY2_PACKAGES )\n'
     file_content = file_content + 'import py2.oauth2client.service_account as ServiceAcc\n'
@@ -261,6 +258,11 @@ def write_down_tools():
     """
     file_content =                'import sys\n'
     file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
+
+    file_content = file_content +'for path in sys.path:\n'
+    file_content = file_content +'    if "Maya2020" in path or "Maya2021" in path or "Maya2022" in path or "Maya2023" in path:\n'
+    file_content = file_content +'        sys.path.remove(path)\n'
+    
     file_content = file_content + 'import google_sheet_request as gs\n'
     file_content = file_content + 'reload( gs )\n'
     file_content = file_content + 'goo_dri = gs.GoogleDriveQuery()\n'

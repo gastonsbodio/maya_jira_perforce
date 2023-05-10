@@ -20,8 +20,9 @@ PY3_PACKAGES = PY_PACK_MOD + "\\py3"
 if sys.version_info.major == 2:
 	PY_PACKAGES = PY2_PACKAGES
 elif sys.version_info.major == 3:
+    
 	PY_PACKAGES = PY3_PACKAGES
-
+PY3CACHE_FOL = '__pycache__'
 TEMP_FOL = tempfile.gettempdir().replace("\\","/") + "/"
 LOGIN_METADATA_FI_NA ='login_metadata.json'
 PERF_LOG_METADATA_FI_NA ='perf_log_metadata.json'
