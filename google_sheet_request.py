@@ -125,9 +125,11 @@ class GoogleDriveQuery():
             except Exception:
                 pass
         for goo_fi in tool_fi_ls:
-            if goo_fi['mimeType'] != 'application/vnd.google-apps.folder':
-                self.dowload_fi ( goo_fi, de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title']   )
-                print ( ' downloading:      ' + goo_fi['title'] )
+            full_path_name = de.SCRIPT_FOL.replace('\\','/') + '/' + goo_fi['title'] 
+            if '.cpython-39.py' in full_path_name:
+                full_path_name = de.SCRIPT_FOL.replace('\\','/') +'/'+ de.PY3CACHE_FOL +'/'+ goo_fi['title'] 
+            self.dowload_fi ( goo_fi, full_path_name  )
+            print ( ' downloading:      ' + full_path_name )
 
 
     def shelf_butt_launch_update_tools():
