@@ -9,7 +9,6 @@ excutSource = type (sys.stdout)
 ENVIROMENT = ''
 if len(str(excutSource).split("maya")) >1:
     ENVIROMENT = 'Maya'
-
 if ENVIROMENT == 'Maya': 
     try:
         import maya_custom_cmd as com
@@ -21,6 +20,8 @@ if ENVIROMENT == 'Maya':
         def current_scene ():
             return com.get_current_sc()
         def getWindow(QWidget):
+            #print(' bla ')
             return com.getWindow(QWidget)
     except Exception as e:
+        print ('bla')
         print (e)
