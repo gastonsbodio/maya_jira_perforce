@@ -92,7 +92,7 @@ class MyMainWindow(QMainWindow):
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
         self.ui.comboB_workSpace.currentIndexChanged.connect(lambda: self.perf_combo_change_ac(3))
 
-        self.t_fea = table_features(  )
+        self.t_fea = table_features( self )
         
         self.t_fea.populate_table( self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
@@ -118,8 +118,10 @@ class MyMainWindow(QMainWindow):
         """populate projects combob.
         """
         self.ui.comboB_projects.clear()
-        proj_ls_diccs = self.jira_m.get_projects( de.SERVER , self.MASTER_USER, self.MASTER_API_KEY )
-        for proj in ['None']+proj_ls_diccs:
+        dicc = self.jira_m.get_projects( de.SERVER , self.MASTER_USER, self.MASTER_API_KEY )
+        if dicc[ de.key_errors ] != '[]':
+            QMessageBox.information(self, u'Loading projects error.', str( dicc[de.key_errors] )  )
+        for proj in ['None'] + dicc[ de.ls_ji_result ]:
             self.ui.comboB_projects.addItem(str(proj))
 
     def set_roots(self):
@@ -146,14 +148,14 @@ class MyMainWindow(QMainWindow):
         perf = pr.PerforceRequests()
         dicc = perf.workspaces_ls( True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
         self.worksp_ls = dicc[de.ls_result]
-        if dicc[de.key_errors] == []:
+        if dicc[de.key_errors] == '[]':
             for proj in ['None']+self.worksp_ls:
                 try:
                     self.ui.comboB_workSpace.addItem(proj['client'])
                 except:
                     pass
         else:
-            QMessageBox.information(self, u'', str( dicc[de.key_errors] )  )
+            QMessageBox.information(self, u'Loading perf workspaces error.', str( dicc[de.key_errors] )  )
             
     def jira_combo_change_ac(self, signal):
         """ComboB or other widget action triggered when user changes values on Jira logging
@@ -265,20 +267,23 @@ def load_root_vars():
 class table_features( ):#QWidget ):
     """All Table functionality
     """
-    def __init__(self):
+    def __init__(self, main_widg = None):
         self.jira_m = jq.JiraQueries()
         self.USER , self.APIKEY, self.PROJECT_KEY  = load_jira_vars()
         self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
         self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
+        self.main_widg = main_widg
     
     def get_self_tasks(self):
         """Query Jira for get own assigned issues.
         Returns:
             [ls]: [list of jira issues]
         """
-        self_tasks = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY )
-        return self_tasks
+        dicc = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY, 'jira' )
+        if dicc[ de.key_errors ] != '[]':
+            QMessageBox.information(self.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
+        return dicc[de.ls_ji_result]
 
     def  populate_table(self, table):
         """populate qtable with values.
@@ -397,8 +402,8 @@ class table_features( ):#QWidget ):
         local_full_path, depot_full_path = self.get_asset_path( asset_na, area)
         perf = pr.PerforceRequests()
         dicc = perf.pull_file_2_local( depot_full_path, True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE )
-        if dicc[de.key_errors] != []:
-            QMessageBox.information(self, u'', str( dicc[de.key_errors] )  )
+        if dicc[de.key_errors] != '[]':
+            QMessageBox.information(self.main_widg, u'Downloading task error', str( dicc[de.key_errors] )  )
             
     def get_asset_path(self, asset_na, area):
         """return depot and local asset path
@@ -456,12 +461,12 @@ class table_features( ):#QWidget ):
         perf = pr.PerforceRequests()
         dicc = perf.pull_file_2_local( thumbDepotPath+thumb_fi_na, True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE )
         thumb_fi = os.path.join(  local_path, thumb_fi_na)
-        if dicc[de.key_errors] == []:
+        if dicc[de.key_errors] == '[]':
             if os.path.isfile( thumb_fi ):
                 label_thumb = getThumbnClass( table, local_path +thumb_fi_na,   (de.width_as_thum , de.height_as_thum)   )
                 table.setCellWidget(table.currentRow(), colum_idx, label_thumb )
         else:
-            QMessageBox.information(self, u'', str( dicc[de.key_errors] )  )
+            QMessageBox.information(self.main_widg, u'Dowloading humbnail error.', str( dicc[de.key_errors] )  )
 
     def do_row_thumb ( self, thumbLocalPath, thumb_fi_na, table , colum_idx ):
         """Creates thumbnail, applies this thumbnail to the task, and submits it to perforce depot
@@ -486,14 +491,14 @@ class table_features( ):#QWidget ):
                     table.setCellWidget(table.currentRow(), colum_idx, label_thumb )
                     comment='new thumbnail created'
                     dicc = perf.add_and_submit( thumbLocalPath+thumb_fi_na, comment , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE ,True )
-                    if dicc[de.key_errors] != []:
-                        QMessageBox.information(self, u' ', str(dicc[de.key_errors]))
+                    if dicc[de.key_errors] != '[]':
+                        QMessageBox.information(self.main_widg, u' ', str(dicc[de.key_errors]))
                 else:
-                    QMessageBox.information(self, u' ', " Check if you have localized this task ")
+                    QMessageBox.information(self.main_widg, u' ', " Check if you have localized this task ")
             else:
-                QMessageBox.information(self, u' ', " Check if current Scene is matching with selected task ")
+                QMessageBox.information(self.main_widg, u' ', " Check if current Scene is matching with selected task ")
         except AttributeError: 
-            QMessageBox.information(self, u' ',  " No Scene Opened ")
+            QMessageBox.information(self.main_widg, u' ',  " No Scene Opened ")
 
     def status_menu_func(self, table, position):
         """Menu on Status column witch change jira issue status.
@@ -501,16 +506,20 @@ class table_features( ):#QWidget ):
             table ([qtablewidget]): [needed table]
             position ([qposition]): [not instantiable var]
         """
-        status_ls = self.jira_m.get_all_statuses_types(self.USER, de.SERVER, self.APIKEY)
+        dicc = self.jira_m.get_all_statuses_types(self.USER, de.SERVER, self.APIKEY)
+        if dicc[ de.key_errors ] != '[]':
+            QMessageBox.information(self.main_widg, u'Getting status types error.', str( dicc[de.key_errors] )  )
         menu_status = QMenu()
-        for status in status_ls:
+        for status in dicc[de.ls_ji_result]:
             statusAction = menu_status.addAction(str(status))
         actionStatus = menu_status.exec_(table.mapToGlobal(position))
         row = table.currentRow()
         issue_key = self.id_rows[str(row)]
         if actionStatus != None:
-            change_done = self.jira_m.change_issue_status( issue_key, self.USER, de.SERVER, self.APIKEY, actionStatus.text())
-            if change_done != "None":
+            dicc = self.jira_m.change_issue_status( issue_key, self.USER, de.SERVER, self.APIKEY, actionStatus.text())
+            if dicc[ de.key_errors ] != '[]':
+                QMessageBox.information(self.main_widg, u'Changing status error.', str( dicc[de.key_errors] )  )
+            if dicc [de.ls_ji_result ] != []:
                 item = QTableWidgetItem( actionStatus.text() )
                 item.setTextAlignment(QtCore.Qt.AlignCenter)
                 table.setItem( row ,de.STATUS_IDX, item )

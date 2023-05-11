@@ -135,12 +135,13 @@ def write_perforce_command_file ( line, if_result, result_fi_na):
     file_content = file_content + line +'\n'
     file_content = file_content + '    p4.disconnect()\n' 
     file_content = file_content + 'except P4Exception:\n'
+    file_content = file_content + '    error_ls = ["Perforce Errors"] \n' 
     file_content = file_content + '    for e in p4.errors:\n'
     file_content = file_content + '        error_ls.append(str(e))\n'
     if if_result:
         file_content = file_content + de.dicc_result +' = {}\n'
         file_content = file_content + de.dicc_result + '["'+ de.ls_result +'"] = '+ de.ls_result+'\n'
-        file_content = file_content + de.dicc_result + '["'+ de.key_errors +'"] = error_ls\n'
+        file_content = file_content + de.dicc_result + '["'+ de.key_errors +'"] = str(error_ls)\n'
         file_content = file_content +'json_object = json.dumps( {dicc_result}, indent = 2 )\n'.format( dicc_result = de.dicc_result ) 
         file_content = file_content + 'with open( "{path}", "w") as fileFa:\n'.format( path = de.PY_PATH + result_fi_na )
         file_content = file_content +'    fileFa.write( str(json_object) )\n'
@@ -163,23 +164,29 @@ def write_jira_command_file( line, if_result, result_fi_na , user , server, apik
     file_content =                   'import sys\n'
     file_content = file_content +    'sys.path.append( "{path}" )\n'.format( path = de.SCRIPT_FOL )
     file_content = file_content +    'import definitions as de\n'
+    file_content = file_content +    'import jira_queries as jq\n'
     file_content = file_content +    'reload(de)\n'
+    file_content = file_content +    'reload(jq)\n'
     file_content = file_content +    'sys.path.append( de.PY2_PACKAGES )\n'
     file_content = file_content +    'from jira import JIRA\n'
     file_content = file_content +    'import requests\n'
     file_content = file_content +    'from requests.auth import HTTPBasicAuth\n'
     file_content = file_content +    'import json\n'
     file_content = file_content +    'options = {"server": "%s" }\n'%( server )
+    file_content = file_content +    'error_ls = []\n'
+    file_content = file_content +    '%s = []\n' %de.ls_ji_result
     file_content = file_content +    'try:\n'
+    file_content = file_content +    '    jira_m = jq.JiraQueries()\n'
     file_content = file_content +    '    jira =  JIRA(options, basic_auth=( "%s", "%s" ))\n'%( user, apikey )
-    file_content = file_content +    '    %s = True \n'%( de.key_connected )
-    file_content = file_content +    'except Exception:\n    %s = False\n' % de.key_connected
-    file_content = file_content +     line  + '\n'
+    file_content = file_content +    '    ' + line.format( object = 'jira_m.')  + '\n'
+    file_content = file_content +    'except Exception as err:\n'
+    file_content = file_content +    '    error_ls = ["Jira Error"]\n'
+    file_content = file_content +    '    error_ls.append(err)\n'
+    file_content = file_content +    '    print( err )\n'
     if if_result:
         file_content = file_content + de.dicc_ji_result +' = {}\n'
-        file_content = file_content + 'if %s :\n' %de.key_connected
-        file_content = file_content + '    '+de.dicc_ji_result + '["'+ de.ls_ji_result +'"] = '+ de.ls_ji_result+'\n'
-        file_content = file_content + 'else:\n    '+de.dicc_ji_result + '["'+ de.ls_ji_result +'"] = []\n'
+        file_content = file_content + de.dicc_ji_result + '["'+ de.ls_ji_result +'"] = '+ de.ls_ji_result+'\n'
+        file_content = file_content + de.dicc_ji_result + '["'+ de.key_errors +'"] = str(error_ls)\n'
         file_content = file_content +'json_object = json.dumps( {dicc_ji_result}, indent = 2 )\n'.format( dicc_ji_result = de.dicc_ji_result ) 
         file_content = file_content + 'with open( "{path}", "w") as fileFa:\n'.format( path = de.PY_PATH + result_fi_na )
         file_content = file_content +'    fileFa.write( str(json_object) )\n'

@@ -40,7 +40,7 @@ class JiraQueries():
         options = {'server': server}
         return JIRA(options, basic_auth=( user, apikey ))
 
-    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, pyStAl = True ):
+    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, jira , pyStAl = True ):
         """
         Args:
             user ([str]): [ user email jira login]
@@ -52,8 +52,7 @@ class JiraQueries():
             [ls]: [list of jira issues obj]
         """
         if pyStAl == False:
-            jira = self.jira_connection( user, server, apikey)
-            issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user, apikey) )#status = 'User Acceptance'")
+            issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user ) )#status = 'User Acceptance'")
             issue_dicc_ls = []
             for issue in issues_ls:
                 main_args_issue_dicc = {}
@@ -77,26 +76,11 @@ class JiraQueries():
                 issue_dicc_ls.append( main_args_issue_dicc )
             return issue_dicc_ls
         else:
-            line =        'try:\n'
-            line = line + '    issues_ls = jira.search_issues( jql_str="project = %s AND %s = %s")\n' %( project_key, user_type, "'"+user+"'") 
-            line = line + 'except Exception:\n    issues_ls = []\n'
-            line = line + '%s = []\n' %de.ls_ji_result
-            line = line + 'for issue in issues_ls:\n'
-            line = line + '    main_args_issue_dicc = {}\n    reporter = issue.fields.reporter.displayName\n'
-            line = line + '    main_args_issue_dicc[de.reporter] = reporter.encode("utf-8")\n    status = str(issue.fields.status)\n'
-            line = line + '    main_args_issue_dicc[de.status] = status\n    title = issue.fields.summary\n'
-            line = line + '    main_args_issue_dicc[de.title] = title\n    labels = issue.fields.labels\n    if labels != []:\n'
-            line = line + '        main_args_issue_dicc[de.area] = str( labels[0].split(de.area+"_")[-1] )\n'
-            line = line + '        main_args_issue_dicc[de.asset_na] = str( labels[1].split(de.asset_na+"_")[-1] )\n'
-            line = line + '    assignee = issue.fields.assignee\n    if assignee != None:\n'
-            line = line + '        main_args_issue_dicc[de.assignee] = assignee.displayName.encode("utf-8")\n    else:\n'
-            line = line + '        main_args_issue_dicc[de.assignee] = str(assignee)\n    main_args_issue_dicc[de.spec] = "%s" +"/browse/"+str(issue.key)\n' %server
-            line = line + '    main_args_issue_dicc[de.id] = str(issue.key)\n'
-            line = line + '    %s.append ( main_args_issue_dicc )\n' %de.ls_ji_result
+            line = '%s = {object}get_custom_user_issues( "%s", "%s", "%s" , "%s", "%s", jira ,pyStAl = False ) \n' %(de.ls_ji_result, user, server, apikey , user_type, project_key)
             file_content = hlp.write_jira_command_file ( line , True, 'task_dicc_request.json', user, server, apikey)
             hlp.create_python_file ('get_task_dicc', file_content)
             hlp.run_py_stand_alone( 'get_task_dicc' )
-            return hlp.json2dicc_load( de.PY_PATH  + 'task_dicc_request.json')[de.ls_ji_result]
+            return hlp.json2dicc_load( de.PY_PATH  + 'task_dicc_request.json')
 
     def get_issues_by_status(self, user, server, apikey, status, API_KEY, pyStAl = True):
         """query issues setted previusly with some status
@@ -117,7 +101,7 @@ class JiraQueries():
             file_content = hlp.write_jira_command_file ( line , True, 'get_issue_by_status.json', user, server, API_KEY)
             hlp.create_python_file ('get_issue_by_status', file_content)
             hlp.run_py_stand_alone( 'get_issue_by_status' )
-            return hlp.json2dicc_load( de.PY_PATH  + 'get_issue_by_status.json')[de.ls_ji_result]
+            return hlp.json2dicc_load( de.PY_PATH  + 'get_issue_by_status.json')#[de.ls_ji_result]
 
     def get_all_statuses_types( self ,user, server, apikey ,pyStAl = True ):
         """get all possibles jira status types
@@ -134,11 +118,12 @@ class JiraQueries():
             status_type = jira.statuses()
             return status_type
         else:
-            line = 'result = jira.statuses()\n%s = [str(st) for st in result]\n' %de.ls_ji_result 
+            line = 'result = jira.statuses()\n'
+            line = line + '    %s = [str(st) for st in result]\n' %de.ls_ji_result 
             file_content = hlp.write_jira_command_file ( line , True, 'status_request.json', user, server, apikey)
             hlp.create_python_file ('get_status_types', file_content)
             hlp.run_py_stand_alone( 'get_status_types' )
-            return hlp.json2dicc_load( de.PY_PATH  + 'status_request.json')[de.ls_ji_result]
+            return hlp.json2dicc_load( de.PY_PATH  + 'status_request.json')#[de.ls_ji_result]
     
     def change_issue_status(self, issue_key, user, server, apikey, new_status, pyStAl= True):
         """
@@ -160,13 +145,12 @@ class JiraQueries():
                 return 'None'
         else:
             line =         'issue = jira.issue( "%s" )\n' %issue_key
-            line = line +  'try:\n'
-            line = line +  '    jira.transition_issue(issue, transition= "{status}")\n    {var} = "{status}"\n'.format( status = new_status , var = de.ls_ji_result )
-            line = line +  'except Exception:\n    %s = "None"\n' %( de.ls_ji_result )
+            line = line + '    jira.transition_issue(issue, transition= "{status}")\n'.format( status = new_status ) 
+            line = line + '    {var} = "{status}"\n'.format( status = new_status , var = de.ls_ji_result )  
             file_content = hlp.write_jira_command_file ( line , True, 'jira_request.json', user, server, apikey)
             hlp.create_python_file ('change_status', file_content)
             hlp.run_py_stand_alone( 'change_status' )
-            return hlp.json2dicc_load( de.PY_PATH  + 'jira_request.json')[de.ls_ji_result]
+            return hlp.json2dicc_load( de.PY_PATH  + 'jira_request.json')#[de.ls_ji_result]
         
     def get_assignable_users(self, server, proj_key , MASTER_USER, MASTER_API_KEY, pyStAl= True ):
         """Get a list of jira assignable users.
@@ -215,11 +199,11 @@ class JiraQueries():
             return projects
         else:
             line =        '{result} = jira.projects()\n'.format( result = de.ls_ji_result )
-            line = line + '{result} = [ str(p) for p in {result} ]'.format( result = de.ls_ji_result )
+            line = line + '    {result} = [ str(p) for p in {result} ]\n'.format( result = de.ls_ji_result )
             file_content = hlp.write_jira_command_file ( line , True, 'jira_request.json', MASTER_USER, server, MASTER_API_KEY )
             hlp.create_python_file ('get_projects', file_content)
             hlp.run_py_stand_alone( 'get_projects' )
-            dicc = hlp.json2dicc_load( de.PY_PATH  + 'jira_request.json')[de.ls_ji_result]
+            dicc = hlp.json2dicc_load( de.PY_PATH  + 'jira_request.json')#[de.ls_ji_result]
             os.remove ( de.PY_PATH  + 'jira_request.json' )
             os.remove ( de.PY_PATH  + 'get_projects.py' )
             return dicc
@@ -240,12 +224,13 @@ class JiraQueries():
             issue.fields.labels.append( text )
             issue.update(fields={"labels": issue.fields.labels})
         else:
-            line =         'issue = jira.issue(issue_key)'
-            line = line +  'issue.fields.labels.append( "{text}" )'.format( text = text )
-            line = line +  'issue.update(fields={"labels": issue.fields.labels})'
-            file_content = hlp.write_jira_command_file ( line , False, '', user, server, apikey)
+            line =         'issue = jira.issue(issue_key)\n'
+            line = line +  '    issue.fields.labels.append( "{text}" )\n'.format( text = text )
+            line = line +      'issue.update(fields={"labels": issue.fields.labels})\n'
+            file_content = hlp.write_jira_command_file ( line , True, 'set_label.json', user, server, apikey)
             hlp.create_python_file ('generate_labels', file_content)
             hlp.run_py_stand_alone( 'generate_labels' )
+            return hlp.json2dicc_load( de.PY_PATH  + 'set_label.json')
 
     def create_issue( self, user, server, apikey, proj_key ,summary , description, type):
         jira = self.jira_connection(user, server, apikey)
