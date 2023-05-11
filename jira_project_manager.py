@@ -55,19 +55,7 @@ except Exception:
     importlib.reload(hlp)
     importlib.reload(pr) 
     importlib.reload(ev) 
-#import maya.cmds as cmds
-##import pymel.core as pm
-#import maya.OpenMaya as OpenMaya
-#import maya.OpenMayaUI as mui
-# shiboken2 import wrapInstance
-#def getWindow(QWidget):
-#    pointer = mui.MQtUtil.mainWindow()
-#    if pointer is not None:
-#        try:
-#            return wrapInstance(long(pointer), QWidget)
-#        except Exception:
-#            return wrapInstance(int(pointer), QWidget)
-        
+
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super(MyMainWindow, self).__init__( ) # Call the inherited classes __init__ method

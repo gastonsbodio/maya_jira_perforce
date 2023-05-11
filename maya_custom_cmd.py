@@ -30,7 +30,7 @@ def thumbnail_cmd( h, w, path, name):
 
 def get_script_fol():
     cmds.internalVar(usd=True)
-    
+
 def get_current_sc():
     return cmds.file(query=True, sceneName=True)
     #return str( pm.sceneName() ).split('Path(')[-1].split(')')[0]

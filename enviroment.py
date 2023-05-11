@@ -7,21 +7,16 @@ except Exception:
 
 excutSource = type (sys.stdout)
 ENVIROMENT = ''
-if len(str(excutSource).split("maya")) >1:
+if len(str(excutSource).split("maya")) > 1 :
     ENVIROMENT = 'Maya'
 if ENVIROMENT == 'Maya': 
+    import maya_custom_cmd as com
     try:
-        import maya_custom_cmd as com
-        try:
-            reload(com)
-        except Exception:
-            importlib.reload(com)
-        ENV_SCRIPT_FOL = com.get_script_fol()
-        def current_scene ():
-            return com.get_current_sc()
-        def getWindow(QWidget):
-            #print(' bla ')
-            return com.getWindow(QWidget)
-    except Exception as e:
-        print ('bla')
-        print (e)
+        reload(com)
+    except Exception:
+        importlib.reload(com)
+    ENV_SCRIPT_FOL = com.get_script_fol()
+    def current_scene ():
+        return com.get_current_sc()
+    def getWindow(QWidget):
+        return com.getWindow(QWidget)
