@@ -66,6 +66,9 @@ class JiraQueries():
                 if labels != []:
                     main_args_issue_dicc[de.area] = str( labels[0].split(de.area+'_')[-1] )
                     main_args_issue_dicc[de.asset_na] = str( labels[1].split(de.asset_na+'_')[-1] )
+                else:
+                    main_args_issue_dicc[de.area] = ''
+                    main_args_issue_dicc[de.asset_na] = ''
                 assignee = issue.fields.assignee
                 if assignee != None:
                     main_args_issue_dicc[de.assignee] = assignee.displayName.encode('utf-8')

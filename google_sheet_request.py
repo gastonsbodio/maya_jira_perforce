@@ -33,11 +33,11 @@ class GoogleSheetRequests():
         file_content = hlp.write_goo_sheet_request ( line , True, 'google_sheet_query.json')
         hlp.create_python_file ( 'google_sheet_query', file_content )
         hlp.run_py_stand_alone( 'google_sheet_query' )
-        dicc = hlp.json2dicc_load( de.PY_PATH  + 'google_sheet_query.json')
+        dicc = hlp.json2dicc_load( de.PY_PATH  + 'google_sheet_query.json')[0]
         os.remove( de.PY_PATH  + 'google_sheet_query.json' )
         os.remove( de.PY_PATH  + 'google_sheet_query.py' ) 
         os.remove( de.PY_PATH  + 'Execute_google_sheet_query.bat' )
-        return dicc
+        return dicc['master_user'], dicc['master_pass']
         
 
 class GoogleDriveQuery():

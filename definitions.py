@@ -1,7 +1,6 @@
 ### Main Constants on the manager System. 
 import sys
 import tempfile
-import enviroment as ev
 import os
 import ctypes
 from ctypes.wintypes import MAX_PATH

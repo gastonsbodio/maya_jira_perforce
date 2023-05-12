@@ -69,18 +69,14 @@ class MyMainWindow(QMainWindow):
         """Initializing functions, var and features.
         """
         self.get_master_creds()
-        #procees = ThreadReturn(target=self.get_master_creds ) #, args=(, ))
-        #procees.start()
         self.jira_m = jq.JiraQueries()
-        self.USER , self.APIKEY, self.PROJECT_KEY  = load_jira_vars()
-        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
-        self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
+        self.USER , self.APIKEY, self.PROJECT_KEY  = hlp.load_jira_vars()
+        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
+        self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.load_project_combo()
-        #while procees.join() == None:
-        #    time.sleep(0.2)
-        self.set_logged_data_on_combo( self.ui.comboB_projects, self.PROJECT_KEY)
+        hlp.set_logged_data_on_combo( self.ui.comboB_projects, self.PROJECT_KEY)
         self.load_workspace_combo()
-        self.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
+        hlp.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
         self.set_roots()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.ui.comboB_projects.currentIndexChanged.connect(lambda: self.jira_combo_change_ac(1))
@@ -104,9 +100,7 @@ class MyMainWindow(QMainWindow):
         """initialize master jira credentials.
         """
         goo_sheet = gs.GoogleSheetRequests()
-        dicc = goo_sheet.get_master_credentials()[0]
-        self.MASTER_USER = dicc['master_user']
-        self.MASTER_API_KEY = dicc['master_pass']
+        self.MASTER_USER, self.MASTER_API_KEY = goo_sheet.get_master_credentials()
 
     def get_api_token_help(self):
         """Browse help for get jira api token
@@ -164,7 +158,7 @@ class MyMainWindow(QMainWindow):
         """
         dicc = hlp.json2dicc_load( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA )
         if dicc!={}:
-            self.USER , self.APIKEY, self.PROJECT_KEY = load_jira_vars()
+            self.USER , self.APIKEY, self.PROJECT_KEY = hlp.load_jira_vars()
         else:
             dicc['project'] = 'None'
             dicc['emailAddress'] = 'None'
@@ -197,7 +191,7 @@ class MyMainWindow(QMainWindow):
             dicc['perf_server'] = 'None'
             dicc['perf_workspace'] = 'None'
         else:
-            self.PERF_USER ,self.PERF_SERVER ,self.PERF_WORKSPACE = load_perf_vars()
+            self.PERF_USER ,self.PERF_SERVER ,self.PERF_WORKSPACE = hlp.load_perf_vars()
         if signal == 1:
             dicc['perf_user'] = str(self.ui.lineEd_perforce_user.text() )
             self.PERF_USER = dicc['perf_user']
@@ -210,68 +204,17 @@ class MyMainWindow(QMainWindow):
             self.PERF_WORKSPACE = str( dicc['perf_workspace'] )
             self.set_roots()
         hlp.metadata_dicc2json( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA , dicc)
-        self.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
+        hlp.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
 
-    def set_logged_data_on_combo(self, comboB, data2check):
-        """Set previus selected item on this particular combobox.
-        Args:
-            comboB ([qcombobox]): [combobox needed for]
-            data2check ([str]): [the text value you wanted to combobox get focus on]
-        """
-        combo_item_ls = [comboB.itemText(i) for i in range(comboB.count())]
-        for idx, item in enumerate ( combo_item_ls ):
-            if str(data2check) == str(item):
-                comboB.setCurrentIndex(idx)
-                break
-
-def load_jira_vars():
-    """instancing loging vars for make it run Jira queries.
-    """
-    dicc = hlp.json2dicc_load( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA )
-    if dicc != {}:
-        USER = str( dicc['emailAddress'] ) 
-        APIKEY = str( dicc['apikey'] )
-        PROJECT_KEY = str( dicc['project'] )
-    else:
-        USER = 'None'
-        APIKEY = 'None'
-        PROJECT_KEY = 'None'
-    return  USER , APIKEY, PROJECT_KEY
-
-def load_perf_vars():
-    """instancing loging vars for make it run  Perforce queries.
-    """    
-    dicc = hlp.json2dicc_load( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA )
-    if dicc != {}:
-        PERF_USER = str( dicc['perf_user'] ) #'user'])
-        PERF_WORKSPACE = str( dicc['perf_workspace'] )
-        PERF_SERVER = str( dicc['perf_server'] )
-    else:
-        PERF_USER = 'None'
-        PERF_WORKSPACE = 'None'
-        PERF_SERVER = 'None'
-    return  PERF_USER ,PERF_SERVER ,PERF_WORKSPACE 
-
-def load_root_vars():
-    """instancing roots vars for path building.
-    """    
-    dicc = hlp.json2dicc_load( de.TEMP_FOL+de.ROOTS_METAD_FI_NA )
-    if dicc != {}:
-        LOCAL_ROOT = str( dicc['local_root'] )
-        DEPOT_ROOT = str( dicc['depot_root'] )
-    else:
-        LOCAL_ROOT = 'None'
-        DEPOT_ROOT = 'None'
-    return  LOCAL_ROOT ,DEPOT_ROOT 
 
 class table_features( ):#QWidget ):
     """All Table functionality
     """
     def __init__(self, main_widg = None):
         self.jira_m = jq.JiraQueries()
-        self.USER , self.APIKEY, self.PROJECT_KEY  = load_jira_vars()
-        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
-        self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
+        self.USER , self.APIKEY, self.PROJECT_KEY  = hlp.load_jira_vars()
+        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
+        self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.main_widg = main_widg
     
@@ -290,9 +233,9 @@ class table_features( ):#QWidget ):
         Args:
             table ([qtablewid]): [description]
         """
-        self.USER , self.APIKEY, self.PROJECT_KEY= load_jira_vars()
-        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = load_perf_vars()
-        self.LOCAL_ROOT, self.DEPOT_ROOT = load_root_vars()
+        self.USER , self.APIKEY, self.PROJECT_KEY= hlp.load_jira_vars()
+        self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
+        self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         table.clear()
         try:

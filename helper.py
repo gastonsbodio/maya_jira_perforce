@@ -285,3 +285,15 @@ def create_python_file( python_file_na, python_file_content ):
     with open( de.PY_PATH + python_file_na + ".py", "w") as fileFa:
         fileFa.write( python_file_content )
         fileFa.close()
+        
+def set_logged_data_on_combo( comboB, data2check):
+    """Set previus selected item on this particular combobox.
+    Args:
+        comboB ([qcombobox]): [combobox needed for]
+        data2check ([str]): [the text value you wanted to combobox get focus on]
+    """
+    combo_item_ls = [comboB.itemText(i) for i in range(comboB.count())]
+    for idx, item in enumerate ( combo_item_ls ):
+        if str(data2check) == str(item):
+            comboB.setCurrentIndex(idx)
+            break
