@@ -1,4 +1,9 @@
 ### specific FRIS settings (path, files)
+KEYWORDS:
+    rig: Rig
+    mod: Model
+    text: Textures
 Paths:
     Rig_Char_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Rig.ma
     Char_Thumb_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/{char_na}_thumbnail.jpg
+    Anim_Check_Root: /frisco_source/Sim/Characters/Focus/FC_001/Anim/

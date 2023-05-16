@@ -32,11 +32,14 @@ PY_PATH = 'C:/Python27/'
 JIRA_MANAGE_FOL = 'jira_manager'
 SETTINGS_SUFIX = '__settings__.yaml'
 MANAGE_PROD_UI = 'management_tool.ui'
+TASK_CREATION_UI = 'task_creation_panel.ui'
+ANIM_CHECK_UI = 'checker_anim_tool.ui'
 
 #MASTER_USER = ""
 #MASTER_API_KEY = ""
 
 GOOGLE_SHET_DATA_NA = "jira_manager_data"
+GOOGLE_SHET_ANIM_CHECK = "Task_001"
 GOOG_CONTENT_TOOLS_FOL = "jira_manager"
 
 ## asset table vars
@@ -51,6 +54,12 @@ area = 'Area'
 asset_na = 'Asset_na'
 thumbnail = 'Thumbnail'
 HEADER_LS = [ thumbnail , asset_na , area , title , spec, comments , status ]
+anim = 'Animation'
+maya = 'Maya'
+fbx = 'FBX'
+unreal = 'Unreal'
+anim_check_colum_sheet_column = 'Narrative Request Outline'
+CHECK_ANIM_LS = [ anim , maya , fbx , unreal ]
 THUMB_IDX = 0
 ASSET_NA_IDX = 1
 AREA_IDX = 2
@@ -59,6 +68,7 @@ STATUS_IDX = 6
 
 width_as_thum = 100
 height_as_thum = 65
+height_anim_ch_row = 20
 
 ##  menues texts
 open_fi_fol = 'explore file dir'

@@ -155,26 +155,28 @@ class JiraQueries():
             hlp.run_py_stand_alone( 'change_status' )
             return hlp.json2dicc_load( de.PY_PATH  + 'jira_request.json')#[de.ls_ji_result]
         
-    def get_assignable_users(self, server, proj_key , MASTER_USER, MASTER_API_KEY, pyStAl= True ):
-        """Get a list of jira assignable users.
+    def request_jira_template( self, server, proj_key , user, api_key, url_line , pyStAl= True ):
+        """Make a Get Request on Jira Api.
         Args:
             server ([str]): [example: "https://genvidtech.atlassian.net"]
             proj_key ([str]): [description]
+            user ([str]): [ user email jira login]]
+            api_key ([str]): [jira api key instead of using password]
             pyStAl ([bool]): [True or False if you want to run the command com python stand alone mode]
         Returns:
             [ls]: [list of dicctionaries with users data]
         """
         if pyStAl == False:
-            url = "%s/rest/api/2/user/assignable/search?project=%s" %( server, proj_key )
-            auth = HTTPBasicAuth( MASTER_USER, MASTER_API_KEY )
+            url = "%s%s" %( server, url_line )
+            auth = HTTPBasicAuth( user, api_key )
             headers = {"Accept": "application/json"}
             query = {'jql': 'project = %s' %proj_key }
             response = requests.request("GET", url, headers=headers , params=query , auth=auth )
             data = json.loads( response.text )
             return data
         else:
-            line =        'url = "%s/rest/api/2/user/assignable/search?project=%s"\n' %(server, proj_key)
-            line = line + 'auth = HTTPBasicAuth("%s", "%s")\n' %( MASTER_USER, MASTER_API_KEY )
+            line =        'url = "%s%s"\n' %( server, url_line )
+            line = line + 'auth = HTTPBasicAuth("%s", "%s")\n' %( user, api_key )
             line = line + 'headers = {"Accept": "application/json"}\n'
             line = line + 'query = {"jql": "project = %s" }\n' %proj_key
             line = line + 'response = requests.request("GET", url, headers=headers , params=query , auth=auth )\n'
@@ -186,6 +188,16 @@ class JiraQueries():
             os.remove(  de.PY_PATH  + 'jira_request.json' )
             os.remove(  de.PY_PATH  + 'get_assignable_users.py' )
             return dicc
+        
+    def get_assignable_users( self, server, proj_key , MASTER_USER, MASTER_API_KEY ):
+        url_line = "/rest/api/2/user/assignable/search?project=%s" %( proj_key )
+        result = self.request_jira_template( server, proj_key , MASTER_USER, MASTER_API_KEY, url_line , pyStAl = True )
+        return result
+    
+    def get_issue_types( self, server, proj_key , MASTER_USER, MASTER_API_KEY ):
+        url_line = "/rest/api/3/issuetype"
+        result = self.request_jira_template( server, proj_key , MASTER_USER, MASTER_API_KEY, url_line , pyStAl = True )
+        return result
 
     def get_projects(self, server, MASTER_USER, MASTER_API_KEY, pyStAl= True):
         """get projects list
@@ -235,13 +247,14 @@ class JiraQueries():
             hlp.run_py_stand_alone( 'generate_labels' )
             return hlp.json2dicc_load( de.PY_PATH  + 'set_label.json')
 
-    def create_issue( self, user, server, apikey, proj_key ,summary , description, type):
+    def create_issue( self, user, server, apikey, proj_key ,summary , description, type, assign_name ):
         jira = self.jira_connection(user, server, apikey)
         issue_dict = {
             'project': {'key': proj_key},
             'summary': summary,
             'description': description,
-            'issuetype': {'name': '%s' %de.issue_type_asset},
+            'issuetype': {'name': '%s' %type},
+            "assignee":  {"name": assign_name },
         }
         new_issue = jira.create_issue( fields = issue_dict )
         

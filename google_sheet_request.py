@@ -30,7 +30,7 @@ class GoogleSheetRequests():
             [dicc]: [dicc with master user and pass]
         """
         line = '%s  = sheet.get_all_records()\n' %de.dicc_ji_result
-        file_content = hlp.write_goo_sheet_request ( line , True, 'google_sheet_query.json')
+        file_content = hlp.write_goo_sheet_request ( line , True, 'google_sheet_query.json', de.GOOGLE_SHET_DATA_NA )
         hlp.create_python_file ( 'google_sheet_query', file_content )
         hlp.run_py_stand_alone( 'google_sheet_query' )
         dicc = hlp.json2dicc_load( de.PY_PATH  + 'google_sheet_query.json')[0]
@@ -38,7 +38,18 @@ class GoogleSheetRequests():
         os.remove( de.PY_PATH  + 'google_sheet_query.py' ) 
         os.remove( de.PY_PATH  + 'Execute_google_sheet_query.bat' )
         return dicc['master_user'], dicc['master_pass']
-        
+    
+    def get_data_custom_google_sheet( self , google_sheet_doc_na):
+        """Get data on custom google sheet
+        Returns:
+            [dicc]: [dicc with master user and pass]
+        """
+        line = '%s  = sheet.get_all_records()\n' %de.dicc_ji_result
+        file_content = hlp.write_goo_sheet_request ( line , True, 'custom_google_doc.json', google_sheet_doc_na)
+        hlp.create_python_file ( 'custom_google_doc', file_content )
+        hlp.run_py_stand_alone( 'custom_google_doc' )
+        dicc = hlp.json2dicc_load( de.PY_PATH  + 'custom_google_doc.json')
+        return dicc
 
 class GoogleDriveQuery():
     def login(self):

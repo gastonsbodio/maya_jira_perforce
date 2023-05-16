@@ -50,6 +50,46 @@ def json2dicc_load(path):
             fileFa.close()
     return dicc
 
+def load_jira_vars():
+    """instancing loging vars for make it run Jira queries.
+    """
+    dicc = json2dicc_load( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA )
+    if dicc != {}:
+        USER = str( dicc['emailAddress'] ) 
+        APIKEY = str( dicc['apikey'] )
+        PROJECT_KEY = str( dicc['project'] )
+    else:
+        USER = 'None'
+        APIKEY = 'None'
+        PROJECT_KEY = 'None'
+    return  USER , APIKEY, PROJECT_KEY
+
+def load_perf_vars():
+    """instancing loging vars for make it run  Perforce queries.
+    """    
+    dicc = json2dicc_load( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA )
+    if dicc != {}:
+        PERF_USER = str( dicc['perf_user'] ) #'user'])
+        PERF_WORKSPACE = str( dicc['perf_workspace'] )
+        PERF_SERVER = str( dicc['perf_server'] )
+    else:
+        PERF_USER = 'None'
+        PERF_WORKSPACE = 'None'
+        PERF_SERVER = 'None'
+    return  PERF_USER ,PERF_SERVER ,PERF_WORKSPACE 
+
+def load_root_vars():
+    """instancing roots vars for path building.
+    """    
+    dicc = json2dicc_load( de.TEMP_FOL+de.ROOTS_METAD_FI_NA )
+    if dicc != {}:
+        LOCAL_ROOT = str( dicc['local_root'] )
+        DEPOT_ROOT = str( dicc['depot_root'] )
+    else:
+        LOCAL_ROOT = 'None'
+        DEPOT_ROOT = 'None'
+    return  LOCAL_ROOT ,DEPOT_ROOT 
+
 def get_yaml_fil_data(path):
     """Read a yaml metadata file and return a dicc
     Args:
@@ -80,7 +120,6 @@ def separate_path_and_na(full_path):
     path_ = full_path.split(fi_na)[0]
     return path_ , fi_na
 
-
 def solve_path( is_local, asset_na, key_path, 
             local_root, depot_root, proj_settings ):
     """Retrun local desire path or depot path depending is_local value.
@@ -109,8 +148,10 @@ def run_py_stand_alone( python_file_na , with_console = False):
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     if with_console == False:
         subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH.replace('/','\\\\') , python_file_na ) ] , startupinfo = si )
-    else:
+    elif with_console == True:
         subprocess.Popen( [r'%sExecute_%s.bat'%( de.PY_PATH.replace('/','\\\\')  , python_file_na ) ] )
+    elif with_console == 'Special':
+        subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH.replace('/','\\\\')  , python_file_na ) ] )
     #subprocess.call(["start", 'C:\\Python27\\Execute_google_sheet_query.bat'], shell=True)
 
 def write_perforce_command_file ( line, if_result, result_fi_na):
@@ -124,13 +165,17 @@ def write_perforce_command_file ( line, if_result, result_fi_na):
         [str]: [python script command content formated]
     """
     file_content =                'import sys \n'
+    file_content = file_content + 'sys.path.append( "{path}" )\n'.format( path = de.SCRIPT_FOL )
     file_content = file_content + 'sys.path.append( "%s" )\n' %de.PY2_PACKAGES
     file_content = file_content + 'from P4 import P4,P4Exception \n' 
     file_content = file_content + 'import json\n'  
+    file_content = file_content + 'import perforce_requests as pr\n' 
+    file_content = file_content + 'reload (pr)\n'
     file_content = file_content + 'p4 = P4() \n'
     file_content = file_content + 'error_ls = [] \n'
     file_content = file_content + '%s = [] \n' %de.ls_result
     file_content = file_content + 'try:\n'
+    file_content = file_content + '    perf = pr.PerforceRequests()\n'
     file_content = file_content + '    p4.connect()\n'
     file_content = file_content + line +'\n'
     file_content = file_content + '    p4.disconnect()\n' 
@@ -221,7 +266,7 @@ def write_request_jira_file( line, if_result, result_fi_na ):#
         file_content = file_content +'    fileFa.close()\n'
     return file_content
 
-def write_goo_sheet_request( line, if_result, result_fi_na ):
+def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA):
     """Specific Jira command, will be the content on a python file made with python requests.
         not possible to run Jira commands when you launch Maya with Gearbox launcher.
     Args:
@@ -247,7 +292,7 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
     file_content = file_content + '    "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"  ]\n'
     file_content = file_content + 'creds = ServiceAcc.ServiceAccountCredentials.from_json_keyfile_name( de.PY2_PACKAGES.replace("\\\\","/") + "/creds/creds.json" , scope)\n'
     file_content = file_content + 'client = gspread.authorize (creds)\n'
-    file_content = file_content + 'sheet = client.open( de.GOOGLE_SHET_DATA_NA ).sheet1\n'
+    file_content = file_content + 'sheet = client.open( "%s" ).sheet1\n' %GOOGLE_SHET_DATA_NA
     file_content = file_content +     line  + '\n'
     if if_result:
         file_content = file_content +'json_object = json.dumps( {dicc_ji_result}, indent = 2 )\n'.format( dicc_ji_result = de.dicc_ji_result ) 
@@ -255,7 +300,6 @@ def write_goo_sheet_request( line, if_result, result_fi_na ):
         file_content = file_content +'    fileFa.write( str(json_object) )\n'
         file_content = file_content +'    fileFa.close()\n'
     return file_content
-
 
 def write_down_tools():
     """Specific Google Drive command, will be the content on a python file.
