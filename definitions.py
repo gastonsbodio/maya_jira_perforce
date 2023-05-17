@@ -88,3 +88,7 @@ key_connected = 'keyConnected'
 
 ### commons keys
 key_errors= 'errors'
+
+#######  anim check tool vars
+
+UNR_EXCEPTION_SUFIXS = [ "_Cinematics.uasset", "_Montage.uasset"]

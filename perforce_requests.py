@@ -95,7 +95,7 @@ class PerforceRequests():
         p4.disconnect() 
         return depo_files 
 
-    def get_fol_fi_on_folder(self, type ,folder, pyStAl, server, user, workspace):
+    def get_fol_fi_on_folder( self, type ,folder, pyStAl, server, user, workspace ):
         """get files or dirs on given perforce depot directory
         Args:
             type ([str]): [('files', 'dirs')]
@@ -120,7 +120,7 @@ class PerforceRequests():
             line = '    {files_ls} = p4.run("{type}" ,"{folder}" + "*")'.format( files_ls= de.ls_result, type= type,folder= folder)
             file_content = hlp.write_perforce_command_file ( line , True, 'get_perf_fi_dirs.json')
             hlp.create_python_file ('get_files_in_dir', file_content)
-            hlp.run_py_stand_alone( 'get_files_in_dir' )
+            hlp.run_py_stand_alone( 'get_files_in_dir'  )
             return hlp.json2dicc_load( de.PY_PATH  + 'get_perf_fi_dirs.json')
 
     def workspaces_ls(self, pyStAl, server, user, workspace):
@@ -184,42 +184,46 @@ class PerforceRequests():
             hlp.run_py_stand_alone( 'edit_file' )
             return hlp.json2dicc_load( de.PY_PATH  + 'result_perf_query.json')
         
-    def get_all_dir_files( self, path_root, server, user, workspace, return_ls = [] , pyStAl = False ):
+    def get_all_dir_fol( self, path_root, server, user, workspace, return_ls = [] , pyStAl = False ):
+        """List all folders and subfolders on a given path
+        Args:
+            path_root ([str]): [ directory for search in ]
+            server ([str]): [description]
+            user ([str]): [description]
+            workspace ([str]): [description]
+            return_ls (list, optional): [list of getting depot folders]. Defaults to [].
+            pyStAl ([bool]): [True or False if you want to run the command com python stand alone mode]
+        Returns:
+            [ls]: [list of getting depot folders]
+        """
         if pyStAl == False:
-            #files_ls = self.get_fol_fi_on_folder( 'files' ,path_root, False, server, user, workspace )
-            #for key in files_ls:#['dir']
-            #    print( key['depotFile'] )
-            #    return_ls.append(key['depotFile'])
+            if not path_root.endswith('/'):
+                path_root = path_root + '/'
+            if path_root not in return_ls:
+                return_ls.append( path_root )
             folder_ls = self.get_fol_fi_on_folder( 'dirs' ,path_root, False, server, user, workspace )
-            folder_ls = [key['dir'] for key in folder_ls]
+            folder_ls = [ key['dir'] for key in folder_ls ]
             for directory in folder_ls:
                 if not directory.endswith('/'):
                     directory = directory + '/'
-                print ('directory')
-                print (directory)
-                try:
-                    return_ls = return_ls + self.get_all_dir_files( directory, server, user,
-                                                    workspace, return_ls = return_ls , pyStAl = False )
-                except MemoryError as err:
-                    print ( err )
-                    print('what???')
-                    line = '    %s = perf.get_all_dir_files( "%s", "%s", "%s", "%s", return_ls = [] , pyStAl = False )' %( de.ls_result, 
-                                                                                                        directory, 
-                                                                                                        server, user, 
-                                                                                                        workspace )
-                    file_content = hlp.write_perforce_command_file ( line , True, 'get_perf_fi.json')
-                    hlp.create_python_file ('get_perf_fi', file_content)
-                    hlp.run_py_stand_alone( 'get_perf_fi' ,'Special')
-                    ls= hlp.json2dicc_load( de.PY_PATH  + 'get_perf_fi.json')[de.ls_result]
-                    print(ls)
-                    return_ls = return_ls + ls
+                if directory not in return_ls:
+                    return_ls.append( directory )
+                print ( directory )
+                line = '    %s = perf.get_all_dir_fol( "%s", "%s", "%s", "%s", return_ls = [] , pyStAl = False )' %( de.ls_result, 
+                                                                                                                directory, 
+                                                                                                                server, user, 
+                                                                                                                workspace )
+                file_content = hlp.write_perforce_command_file ( line , True, 'get_perf_sub_fold.json')
+                hlp.create_python_file ('get_perf_sub_fold', file_content)
+                hlp.run_py_stand_alone( 'get_perf_sub_fold','Special' )
+                return_ls = return_ls + hlp.json2dicc_load( de.PY_PATH  + 'get_perf_sub_fold.json')[ de.ls_result ]
             return  return_ls
         else:
-            line = '    %s = perf.get_all_dir_files( "%s", "%s", "%s", "%s", return_ls = [] , pyStAl = False )' %( de.ls_result, 
+            line = '    %s = perf.get_all_dir_fol( "%s", "%s", "%s", "%s", return_ls = [] , pyStAl = False )' %( de.ls_result, 
                                                                                                                 path_root, 
                                                                                                                 server, user, 
                                                                                                                 workspace )
-            file_content = hlp.write_perforce_command_file ( line , True, 'get_perf_files.json')
-            hlp.create_python_file ('get_perf_files', file_content)
-            hlp.run_py_stand_alone( 'get_perf_files' )
-            return hlp.json2dicc_load( de.PY_PATH  + 'get_perf_files.json')
+            file_content = hlp.write_perforce_command_file ( line , True, 'get_perf_fold.json')
+            hlp.create_python_file ('get_perf_fold', file_content)
+            hlp.run_py_stand_alone( 'get_perf_fold','Special' )
+            return hlp.json2dicc_load( de.PY_PATH  + 'get_perf_fold.json')

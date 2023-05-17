@@ -120,20 +120,30 @@ def separate_path_and_na(full_path):
     path_ = full_path.split(fi_na)[0]
     return path_ , fi_na
 
-def solve_path( is_local, asset_na, key_path, 
-            local_root, depot_root, proj_settings ):
+def solve_path( root_state, asset_na, key_path, 
+            local_root, depot_root, git_root, proj_settings ):
     """Retrun local desire path or depot path depending is_local value.
     Args:
-        is_local (bool): [value]
+        root_state (str): ['local', 'depot', 'git']
         asset_na ([str]): [asset name]
         key_path ([str]): [dicc key built in __settintgs__]
     Returns:
         [str]: [dep path or local path depending is_local value]
     """
-    if is_local:
+    if root_state == 'local':
         return local_root + proj_settings['Paths'][key_path].format(char_na = asset_na) 
-    else:
+    elif root_state == 'depot':
         return depot_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+    elif root_state == 'git':
+        return git_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+
+def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
+    path, name = separate_path_and_na( file_path )
+    file = name.split('.')[0]
+    if with_prefix:
+        if not file.startswith (prefix):
+            file = prefix + file
+    return file
 
 def run_py_stand_alone( python_file_na , with_console = False):
     """create a bat file witch run python stand alone

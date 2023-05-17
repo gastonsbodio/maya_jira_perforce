@@ -253,8 +253,8 @@ class table_features( ):#QWidget ):
         for i, task in enumerate(tasks_ls_diccs):
             table.setRowHeight(i, de.height_as_thum )
             self.id_rows[str(i)] = task['Id']
-            char_thumb_path = hlp.solve_path( True, task[de.asset_na], 'Char_Thumb_Path' ,
-                                            self.LOCAL_ROOT, self.DEPOT_ROOT, self.PROJ_SETTINGS)
+            char_thumb_path = hlp.solve_path( 'local', task[de.asset_na], 'Char_Thumb_Path' ,
+                                            self.LOCAL_ROOT,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS)
             thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( char_thumb_path )
             label_thumb = getThumbnClass( table,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
             table.setCellWidget( i , de.THUMB_IDX, label_thumb )
@@ -356,10 +356,10 @@ class table_features( ):#QWidget ):
         Returns:
             [tuple]: [return to arg as touple format: local full path and perforce repo full path]
         """
-        local_full_path = hlp.solve_path( True, asset_na, area+'_Char_Path',
-                                            self.LOCAL_ROOT, self.DEPOT_ROOT, self.PROJ_SETTINGS)
-        depot_full_path = hlp.solve_path( False, asset_na, area+'_Char_Path',
-                                            self.LOCAL_ROOT, self.DEPOT_ROOT, self.PROJ_SETTINGS)
+        local_full_path = hlp.solve_path( 'local', asset_na, area+'_Char_Path',
+                                            self.LOCAL_ROOT, self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS)
+        depot_full_path = hlp.solve_path( 'depot', asset_na, area+'_Char_Path',
+                                            self.LOCAL_ROOT, self.DEPOT_ROOT, '' , self.PROJ_SETTINGS)
         return local_full_path, depot_full_path
 
     def explore_char_fol(self, asset_na, area):
@@ -379,10 +379,10 @@ class table_features( ):#QWidget ):
             position ([qposition]): [don t need to be instanced]
         """
         asset_na = self.get_text_item_colum( table, de.ASSET_NA_IDX)
-        thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( True, asset_na, 'Char_Thumb_Path',
-                                                                                self.LOCAL_ROOT, self.DEPOT_ROOT, self.PROJ_SETTINGS ) )
-        thumbDepotPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( False, asset_na, 'Char_Thumb_Path' ,
-                                                                                self.LOCAL_ROOT, self.DEPOT_ROOT, self.PROJ_SETTINGS)  )
+        thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'local', asset_na, 'Char_Thumb_Path', self.LOCAL_ROOT, 
+                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS ) )
+        thumbDepotPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'depot', asset_na, 'Char_Thumb_Path' , self.LOCAL_ROOT, 
+                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS)  )
         menu_thumb = QMenu()
         doThumbnailAc1 = menu_thumb.addAction( de.do_thumb, lambda: self.do_row_thumb( thumbLocalPath, thumb_fi_na, table , de.THUMB_IDX ) )
         doThumbnailAc2 = menu_thumb.addAction( de.get_thumb , lambda: self.get_thumb_from_depot( thumbDepotPath , thumb_fi_na , table , de.THUMB_IDX) )
