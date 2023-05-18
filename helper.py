@@ -164,7 +164,7 @@ def run_py_stand_alone( python_file_na , with_console = False):
         subprocess.call( [r'%sExecute_%s.bat'%( de.PY_PATH.replace('/','\\\\')  , python_file_na ) ] )
     #subprocess.call(["start", 'C:\\Python27\\Execute_google_sheet_query.bat'], shell=True)
 
-def write_perforce_command_file ( line, if_result, result_fi_na):
+def write_perforce_command_file ( line, if_result, result_fi_na, perf_server, perf_user, workspace):
     """Specific Perforce command, will be the content on a python file
         not possible to run Perforces commands directly in Maya.
     Args:
@@ -182,6 +182,7 @@ def write_perforce_command_file ( line, if_result, result_fi_na):
     file_content = file_content + 'import perforce_requests as pr\n' 
     file_content = file_content + 'reload (pr)\n'
     file_content = file_content + 'p4 = P4() \n'
+    file_content = file_content + 'p4.port = "%s"   \np4.user = "%s"   \np4.client = "%s"   \n'%(perf_server, perf_user, workspace)
     file_content = file_content + 'error_ls = [] \n'
     file_content = file_content + '%s = [] \n' %de.ls_result
     file_content = file_content + 'try:\n'
@@ -189,7 +190,8 @@ def write_perforce_command_file ( line, if_result, result_fi_na):
     file_content = file_content + '    p4.connect()\n'
     file_content = file_content + line +'\n'
     file_content = file_content + '    p4.disconnect()\n' 
-    file_content = file_content + 'except P4Exception:\n'
+    file_content = file_content + 'except P4Exception as err:\n'
+    file_content = file_content + '    print( err )\n' 
     file_content = file_content + '    error_ls = ["Perforce Errors"] \n' 
     file_content = file_content + '    for e in p4.errors:\n'
     file_content = file_content + '        error_ls.append(str(e))\n'

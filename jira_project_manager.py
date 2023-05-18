@@ -56,51 +56,60 @@ except Exception:
     importlib.reload(pr) 
     importlib.reload(ev) 
 
+import maya.cmds as cmds
+#import pymel.core as pm
+import maya.OpenMaya as OpenMaya
+import maya.OpenMayaUI as mui
+from shiboken2 import wrapInstance
+
+def getWindow(QWidget):
+    pointer = mui.MQtUtil.mainWindow()
+    if pointer is not None:
+        try:
+            return wrapInstance(long(pointer), QWidget)
+        except Exception:
+            return wrapInstance(int(pointer), QWidget)
+
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super(MyMainWindow, self).__init__( ) # Call the inherited classes __init__ method
         loader = QUiLoader()
         uifile = QtCore.QFile( de.SCRIPT_FOL.replace('\\','/') +'/'+ de.MANAGE_PROD_UI)
         uifile.open(QtCore.QFile.ReadOnly)
-        self.ui = loader.load( uifile, ev.getWindow(QWidget) )
+        self.ui = loader.load( uifile, getWindow(QWidget) )
         self.initialize_widget_conn()
 
     def initialize_widget_conn(self):
         """Initializing functions, var and features.
         """
-        self.get_master_creds()
+        #self.get_master_creds()
         self.jira_m = jq.JiraQueries()
         self.USER , self.APIKEY, self.PROJECT_KEY  = hlp.load_jira_vars()
         self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.load_project_combo()
         hlp.set_logged_data_on_combo( self.ui.comboB_projects, self.PROJECT_KEY)
-        self.load_workspace_combo()
-        hlp.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
         self.set_roots()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.ui.comboB_projects.currentIndexChanged.connect(lambda: self.jira_combo_change_ac(1))
         self.ui.lineEd_jira_user.setText( self.USER )
-        self.ui.pushBut_set_jira_user.clicked.connect(lambda: self.jira_combo_change_ac(2))
-        self.ui.pushBut_set_apiK.clicked.connect(lambda: self.jira_combo_change_ac(3))
+        self.ui.pushBut_set_jira_login.clicked.connect( self.jira_login_action )
 
-        self.ui.pushBut_set_user_per.clicked.connect(lambda: self.perf_combo_change_ac(1))
+        self.ui.pushBut_login_perf.clicked.connect(lambda: self.perf_combo_change_ac(1))
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
-        self.ui.comboB_workSpace.currentIndexChanged.connect(lambda: self.perf_combo_change_ac(3))
-
+        self.ui.lineEd_perf_worksp.setText( self.PERF_WORKSPACE  )
         self.t_fea = table_features( self )
-        
         self.t_fea.populate_table( self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
         self.t_fea.generate_menu_dicc()
         self.ui.pushBut_reload_tables.clicked.connect( self.t_fea.refresh_tables )
         self.ui.actionGet_Jira_Api_Key.triggered.connect(self.get_api_token_help)
 
-    def get_master_creds( self ):
-        """initialize master jira credentials.
-        """
-        goo_sheet = gs.GoogleSheetRequests()
-        self.MASTER_USER, self.MASTER_API_KEY = goo_sheet.get_master_credentials()
+    #def get_master_creds( self ):
+    #    """initialize master jira credentials.
+    #    """
+    #    goo_sheet = gs.GoogleSheetRequests()
+    #    self.MASTER_USER, self.MASTER_API_KEY = goo_sheet.get_master_credentials()
 
     def get_api_token_help(self):
         """Browse help for get jira api token
@@ -112,7 +121,7 @@ class MyMainWindow(QMainWindow):
         """populate projects combob.
         """
         self.ui.comboB_projects.clear()
-        dicc = self.jira_m.get_projects( de.SERVER , self.MASTER_USER, self.MASTER_API_KEY )
+        dicc = self.jira_m.get_projects( de.SERVER , self.USER , self.APIKEY )
         if dicc[ de.key_errors ] != '[]':
             QMessageBox.information(self, u'Loading projects error.', str( dicc[de.key_errors] )  )
         for proj in ['None'] + dicc[ de.ls_ji_result ]:
@@ -121,6 +130,7 @@ class MyMainWindow(QMainWindow):
     def set_roots(self):
         """instancing local root and depot root related with the choosen workspace.
         """
+        self.set_worksp_ls()
         dicc = {}
         for proj in self.worksp_ls:
             try:
@@ -135,22 +145,41 @@ class MyMainWindow(QMainWindow):
         hlp.metadata_dicc2json( de.TEMP_FOL+de.ROOTS_METAD_FI_NA , dicc)
 
 
-    def load_workspace_combo(self):
-        """populate workspace combob.
+    def set_worksp_ls(self):
+        """get all workspaces data
         """
-        self.ui.comboB_workSpace.clear()
         perf = pr.PerforceRequests()
-        dicc = perf.workspaces_ls( True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
-        self.worksp_ls = dicc[de.ls_result]
-        if dicc[de.key_errors] == '[]':
-            for proj in ['None']+self.worksp_ls:
-                try:
-                    self.ui.comboB_workSpace.addItem(proj['client'])
-                except:
-                    pass
+        if self.PERF_USER != 'None' and self.PERF_USER != '':
+            dicc = perf.workspaces_ls( True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
+            if dicc[de.key_errors] == '[]':
+                self.worksp_ls = dicc[de.ls_result]
+            else:
+                self.worksp_ls = []
+                QMessageBox.information(self, u'Loading perf workspaces error.', str( dicc[de.key_errors] )  )
         else:
-            QMessageBox.information(self, u'Loading perf workspaces error.', str( dicc[de.key_errors] )  )
-            
+            self.worksp_ls = []
+    #def load_workspace_combo(self):
+    #    """populate workspace combob.
+    #    """
+    #    self.ui.comboB_workSpace.clear()
+    #    perf = pr.PerforceRequests()
+    #    dicc = perf.workspaces_ls( True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
+    #    self.worksp_ls = dicc[de.ls_result]
+    #    if dicc[de.key_errors] == '[]':
+    #        for proj in ['None']+self.worksp_ls:
+    #            try:
+    #                self.ui.comboB_workSpace.addItem(proj['client'])
+    #            except:
+    #                pass
+    #    else:
+    #        QMessageBox.information(self, u'Loading perf workspaces error.', str( dicc[de.key_errors] )  )
+
+    def jira_login_action(self):
+        self.jira_combo_change_ac(2)
+        self.load_project_combo()
+        hlp.set_logged_data_on_combo( self.ui.comboB_projects, self.PROJECT_KEY)
+        QMessageBox.information(self, u'', "Jira login\n settings done"  )
+        
     def jira_combo_change_ac(self, signal):
         """ComboB or other widget action triggered when user changes values on Jira logging
         Args:
@@ -171,12 +200,10 @@ class MyMainWindow(QMainWindow):
             dicc['emailAddress'] = str( self.ui.lineEd_jira_user.text() )
             self.USER = dicc['emailAddress']
             self.ui.lineEd_jira_user.setText( self.USER )
-            QMessageBox.information(self, u'', "Jira user email\n setting done"  )
-        elif signal == 3:
+
             dicc['apikey'] = str(self.ui.lineEd_apiKey.text())
             self.APIKEY = str( dicc['apikey'] )
             self.ui.lineEd_apiKey.setText('')
-            QMessageBox.information(self, u'', " Jira apikey\nsetting done"  )
         hlp.metadata_dicc2json( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA , dicc)
         self.t_fea.populate_table( self.ui.table_assetsTasks)
 
@@ -198,13 +225,13 @@ class MyMainWindow(QMainWindow):
 
             dicc['perf_server'] = str(self.ui.lineEd_perforce_server.text() )
             self.PERF_SERVER = dicc['perf_server']
-            QMessageBox.information(self, u'', "Perforce server and sser \n         setting done"  )
-        elif signal == 3:
-            dicc['perf_workspace'] = str(self.ui.comboB_workSpace.currentText())
+            QMessageBox.information(self, u'', "Perforce login \n     settings done"  )
+
+            dicc['perf_workspace'] = str(self.ui.lineEd_perf_worksp.text())
             self.PERF_WORKSPACE = str( dicc['perf_workspace'] )
             self.set_roots()
         hlp.metadata_dicc2json( de.TEMP_FOL+de.PERF_LOG_METADATA_FI_NA , dicc)
-        hlp.set_logged_data_on_combo( self.ui.comboB_workSpace, self.PERF_WORKSPACE)
+
 
 
 class table_features( ):#QWidget ):
@@ -223,11 +250,14 @@ class table_features( ):#QWidget ):
         Returns:
             [ls]: [list of jira issues]
         """
-        dicc = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY, 'jira' )
-        if dicc[ de.key_errors ] != '[]':
-            QMessageBox.information(self.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
-        return dicc[de.ls_ji_result]
-
+        if self.PROJECT_KEY != '' and self.PROJECT_KEY != 'None':
+            if self.APIKEY != 'None' and self.USER != 'None':
+                dicc = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY, 'jira' )
+                if dicc[ de.key_errors ] != '[]':
+                    QMessageBox.information(self.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
+            return dicc[de.ls_ji_result]
+        else:
+            return []
     def  populate_table(self, table):
         """populate qtable with values.
         Args:

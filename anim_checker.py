@@ -46,8 +46,8 @@ class AnimCheckerApp(QMainWindow):
         self.jira_m = jq.JiraQueries()
         self.USER , self.APIKEY, self.PROJECT_KEY  = hlp.load_jira_vars()
         self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
-        self.GIT_ROOT = 'C:/dev__'
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
+        self.GIT_ROOT = self.LOCAL_ROOT
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.load_table( self.ui.table_anim_check, 'populate' ) 
         self.ui.push_butt_start_check.clicked.connect( lambda: self.load_table( self.ui.table_anim_check, 'check' ) )
