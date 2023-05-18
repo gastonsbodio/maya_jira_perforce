@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>450</width>
-    <height>550</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1123,6 +1123,19 @@ background-color: #ff5733;
     <column/>
     <column/>
     <column/>
+   </widget>
+   <widget class="QPushButton" name="push_butt_start_check">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>520</y>
+      <width>411</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start Checking</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

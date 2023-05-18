@@ -49,7 +49,9 @@ class AnimCheckerApp(QMainWindow):
         self.GIT_ROOT = 'C:/dev__'
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
-        self.populate_table( self.ui.table_anim_check )
+        self.set_table_columns( self.ui.table_anim_check )
+        self.ui.push_butt_start_check.clicked.connect( lambda: self.populate_table( self.ui.table_anim_check ) )
+        
 
     #def get_master_creds( self ):
     #    """initialize master jira credentials.
@@ -63,6 +65,17 @@ class AnimCheckerApp(QMainWindow):
         goo_sheet = gs.GoogleSheetRequests()
         return goo_sheet.get_data_custom_google_sheet( de.GOOGLE_SHET_ANIM_CHECK )
 
+    def set_table_columns(self, table):
+        for i, header in enumerate (de.CHECK_ANIM_LS):
+            locals()["item"+ str(i)] = QTableWidgetItem(header)
+            #locals()["item"+ str(i)].setBackground(QColor(180, 75, 65))
+            table.setHorizontalHeaderItem( i,locals()["item"+ str(i)] )
+        table.setColumnWidth( de.THUMB_IDX , de.width_as_thum )
+        table.setColumnWidth( 0,  200 )
+        table.setColumnWidth( 1,  40 )
+        table.setColumnWidth( 2,  40 )
+        table.setColumnWidth( 3,  40 )
+
     def  populate_table(self, table):
         """populate qtable with values.
         Args:
@@ -73,23 +86,14 @@ class AnimCheckerApp(QMainWindow):
         for f in unreal_anim_fi_ls:
             print( f )
         try:
-            table_anims, ma_files_ls, self.fbx_files_ls = self.get_all_anim_check_files()#self.get_google_doc_data( )
+            table_anims, ma_files_ls, fbx_files_ls = self.get_all_anim_check_files()#self.get_google_doc_data( )
         except Exception as err:
             print (err)
             table_anims = []
             ma_files_ls = []
-            self.fbx_files_ls = []
+            fbx_files_ls = []
         table.setRowCount ( len( table_anims ) )
-        for i, header in enumerate (de.CHECK_ANIM_LS):
-            locals()["item"+ str(i)] = QTableWidgetItem(header)
-            #locals()["item"+ str(i)].setBackground(QColor(180, 75, 65))
-            table.setHorizontalHeaderItem( i,locals()["item"+ str(i)] )
-        table.setColumnWidth( de.THUMB_IDX , de.width_as_thum )
-        
-        table.setColumnWidth( 0,  200 )
-        table.setColumnWidth( 1,  40 )
-        table.setColumnWidth( 2,  40 )
-        table.setColumnWidth( 3,  40 )
+        ### set tamble columns here
         self.id_rows = {}
         for i, task in enumerate( table_anims ):
             table.setRowHeight( i, de.height_anim_ch_row )
@@ -101,6 +105,16 @@ class AnimCheckerApp(QMainWindow):
                     item.setCheckState(QtCore.Qt.CheckState.Unchecked)
                     #checkB = QCheckBox( None )
                     #checkB.setParent( item )
+                    table_anim = hlp.only_name_out_extention( table_anims[i] , with_prefix = True, prefix = 'AS_' )
+                    if column == de.maya:
+                        if table_anim in ma_files_ls :
+                            item.setCheckState( QtCore.Qt.CheckState.Checked )
+                    elif column == de.fbx:
+                        if table_anim in fbx_files_ls :
+                            item.setCheckState( QtCore.Qt.CheckState.Checked )
+                    elif column == de.unreal:
+                        if table_anim in unreal_anim_fi_ls :
+                            item.setCheckState( QtCore.Qt.CheckState.Checked )
                 table.setItem(i ,idx, item)
                 #item.setTextAlignment(QtCore.Qt.AlignCenter)
 

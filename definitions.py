@@ -54,12 +54,15 @@ area = 'Area'
 asset_na = 'Asset_na'
 thumbnail = 'Thumbnail'
 HEADER_LS = [ thumbnail , asset_na , area , title , spec, comments , status ]
+
+### check anim tool
 anim = 'Animation'
 maya = 'Maya'
 fbx = 'FBX'
 unreal = 'Unreal'
 anim_check_colum_sheet_column = 'Narrative Request Outline'
 CHECK_ANIM_LS = [ anim , maya , fbx , unreal ]
+
 THUMB_IDX = 0
 ASSET_NA_IDX = 1
 AREA_IDX = 2
