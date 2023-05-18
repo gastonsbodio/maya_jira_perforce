@@ -49,8 +49,8 @@ class AnimCheckerApp(QMainWindow):
         self.GIT_ROOT = 'C:/dev__'
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
-        self.set_table_columns( self.ui.table_anim_check )
-        self.ui.push_butt_start_check.clicked.connect( lambda: self.populate_table( self.ui.table_anim_check ) )
+        self.load_table( self.ui.table_anim_check, 'populate' ) 
+        self.ui.push_butt_start_check.clicked.connect( lambda: self.load_table( self.ui.table_anim_check, 'check' ) )
         
 
     #def get_master_creds( self ):
@@ -76,45 +76,52 @@ class AnimCheckerApp(QMainWindow):
         table.setColumnWidth( 2,  40 )
         table.setColumnWidth( 3,  40 )
 
-    def  populate_table(self, table):
+    def  load_table(self, table, type):
         """populate qtable with values.
         Args:
             table ([qtablewid]): [description]
         """
         table.clear()
-        unreal_anim_fi_ls = self.list_unreal_files()
-        for f in unreal_anim_fi_ls:
-            print( f )
+        self.set_table_columns( self.ui.table_anim_check )
+        if type == 'check':
+            unreal_anim_fi_ls = self.list_unreal_files()
+            for f in unreal_anim_fi_ls:
+                print( f )
+            try:
+                table_anims, ma_files_ls, fbx_files_ls = self.get_all_anim_check_files()#self.get_google_doc_data( )
+            except Exception as err:
+                print (err)
+                table_anims = []
+                ma_files_ls = []
+                fbx_files_ls = []
         try:
-            table_anims, ma_files_ls, fbx_files_ls = self.get_all_anim_check_files()#self.get_google_doc_data( )
+            tasks_ls_diccs = self.get_google_doc_data( )
         except Exception as err:
             print (err)
-            table_anims = []
-            ma_files_ls = []
-            fbx_files_ls = []
-        table.setRowCount ( len( table_anims ) )
-        ### set tamble columns here
+            tasks_ls_diccs = []
+        table.setRowCount( len( tasks_ls_diccs ) )
         self.id_rows = {}
-        for i, task in enumerate( table_anims ):
+        for i, task in enumerate( tasks_ls_diccs ):
             table.setRowHeight( i, de.height_anim_ch_row )
             for idx, column in enumerate ( de.CHECK_ANIM_LS ):
                 if column == de.anim:
-                    item = QTableWidgetItem( str( task )) #[ de.anim_check_colum_sheet_column]  ) )
+                    item = QTableWidgetItem( str( task[ de.anim_check_colum_sheet_column]  ) )
                 else:
                     item = QTableWidgetItem( '' )
                     item.setCheckState(QtCore.Qt.CheckState.Unchecked)
                     #checkB = QCheckBox( None )
                     #checkB.setParent( item )
-                    table_anim = hlp.only_name_out_extention( table_anims[i] , with_prefix = True, prefix = 'AS_' )
-                    if column == de.maya:
-                        if table_anim in ma_files_ls :
-                            item.setCheckState( QtCore.Qt.CheckState.Checked )
-                    elif column == de.fbx:
-                        if table_anim in fbx_files_ls :
-                            item.setCheckState( QtCore.Qt.CheckState.Checked )
-                    elif column == de.unreal:
-                        if table_anim in unreal_anim_fi_ls :
-                            item.setCheckState( QtCore.Qt.CheckState.Checked )
+                    if type == 'check':
+                        table_anim = hlp.only_name_out_extention( task[ de.anim_check_colum_sheet_column ], with_prefix = True, prefix = 'AS_' )
+                        if column == de.maya:
+                            if table_anim in ma_files_ls :
+                                item.setCheckState( QtCore.Qt.CheckState.Checked )
+                        elif column == de.fbx:
+                            if table_anim in fbx_files_ls :
+                                item.setCheckState( QtCore.Qt.CheckState.Checked )
+                        elif column == de.unreal:
+                            if table_anim in unreal_anim_fi_ls :
+                                item.setCheckState( QtCore.Qt.CheckState.Checked )
                 table.setItem(i ,idx, item)
                 #item.setTextAlignment(QtCore.Qt.AlignCenter)
 
