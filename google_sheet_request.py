@@ -46,12 +46,12 @@ class GoogleSheetRequests():
         Returns:
             [dicc]: [dicc with master user and pass]
         """
-        line = '%s  = sheet.get_all_records()\n' %de.dicc_ji_result
+        line = '%s  = sheet.get_all_records()\n' %de.ls_result
         file_content = hlp.write_goo_sheet_request ( line , True, 'custom_google_doc.json', google_sheet_doc_na)
         hlp.create_python_file ( 'custom_google_doc', file_content )
         hlp.run_py_stand_alone( 'custom_google_doc' )
-        dicc = hlp.json2dicc_load( de.PY_PATH  + 'custom_google_doc.json')
-        return dicc
+        list_dicc = hlp.json2dicc_load( de.PY_PATH  + 'custom_google_doc.json')
+        return list_dicc
 
 class GoogleDriveQuery():
     def login(self):

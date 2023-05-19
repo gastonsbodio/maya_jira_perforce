@@ -64,6 +64,20 @@ def load_jira_vars():
         PROJECT_KEY = 'None'
     return  USER , APIKEY, PROJECT_KEY
 
+def load_anim_check_vars():
+    """instancing anim check tool vars.
+    """
+    dicc = json2dicc_load( de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING )
+    if dicc != {}:
+        SHEET_NA         = str( dicc['sheet_na'] ) 
+        DEPOT_ANIM_ROOT  = str( dicc['depot_a_root'] )
+        UNREAL_ANIM_ROOT = str( dicc['unreal_a_root'] )
+    else:
+        SHEET_NA = 'None'
+        DEPOT_ANIM_ROOT = 'None'
+        UNREAL_ANIM_ROOT = 'None'
+    return  SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT
+
 def load_perf_vars():
     """instancing loging vars for make it run  Perforce queries.
     """    
@@ -119,6 +133,12 @@ def separate_path_and_na(full_path):
     fi_na = full_path.split('/')[-1]
     path_ = full_path.split(fi_na)[0]
     return path_ , fi_na
+
+def format_path(path):
+    path = path.replace('\\','/')
+    if not path.endswith('/'):
+        path = path + '/'
+    return path
 
 def solve_path( root_state, asset_na, key_path, 
             local_root, depot_root, git_root, proj_settings ):
@@ -303,11 +323,21 @@ def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA
     file_content = file_content + 'scope = [ "https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets" ,\n'
     file_content = file_content + '    "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"  ]\n'
     file_content = file_content + 'creds = ServiceAcc.ServiceAccountCredentials.from_json_keyfile_name( de.PY2_PACKAGES.replace("\\\\","/") + "/creds/creds.json" , scope)\n'
-    file_content = file_content + 'client = gspread.authorize (creds)\n'
-    file_content = file_content + 'sheet = client.open( "%s" ).sheet1\n' %GOOGLE_SHET_DATA_NA
-    file_content = file_content +     line  + '\n'
+    file_content = file_content + 'error_ls = []\n'
+    file_content = file_content + '%s = []\n' %de.ls_result
+    file_content = file_content + 'try:\n'
+    file_content = file_content + '    client = gspread.authorize (creds)\n'
+    file_content = file_content + '    sheet = client.open( "%s" ).sheet1\n' %GOOGLE_SHET_DATA_NA
+    file_content = file_content + '    ' +  line  + '\n'
+    file_content = file_content + 'except Exception as err:\n'
+    file_content = file_content + '    error_ls = ["G Sheet Error"]\n'
+    file_content = file_content + '    error_ls.append(err)\n'
+    file_content = file_content + '    print( err )\n'
     if if_result:
-        file_content = file_content +'json_object = json.dumps( {dicc_ji_result}, indent = 2 )\n'.format( dicc_ji_result = de.dicc_ji_result ) 
+        file_content = file_content + de.dicc_result +' = {}\n'
+        file_content = file_content + de.dicc_result + '["'+ de.ls_result +'"] = ' + de.ls_result+'\n'
+        file_content = file_content + de.dicc_result + '["'+ de.key_errors +'"] = str(error_ls)\n'
+        file_content = file_content +'json_object = json.dumps( {dicc_result}, indent = 2 )\n'.format( dicc_result = de.dicc_result ) 
         file_content = file_content + 'with open( "{path}", "w") as fileFa:\n'.format( path = de.PY_PATH + result_fi_na )
         file_content = file_content +'    fileFa.write( str(json_object) )\n'
         file_content = file_content +'    fileFa.close()\n'

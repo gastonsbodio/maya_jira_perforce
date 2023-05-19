@@ -23,11 +23,13 @@ elif sys.version_info.major == 3:
 	PY_PACKAGES = PY3_PACKAGES
 PY3CACHE_FOL = '__pycache__'
 TEMP_FOL = tempfile.gettempdir().replace("\\","/") + "/"
+ANIM_CHECK_TOOL_SETTING ='anim_check_settings.json'
 LOGIN_METADATA_FI_NA ='login_metadata.json'
 PERF_LOG_METADATA_FI_NA ='perf_log_metadata.json'
 ROOTS_METAD_FI_NA = 'roots_metadata.json'
 SERVER = "https://genvidtech.atlassian.net"
 JIRA_API_TOKEN_HELP = 'https://docs.searchunify.com/Content/Content-Sources/Atlassian-Jira-Confluence-Authentication-Create-API-Token.htm'
+INSTRUCTION_CHECK_ANIM_TOOL = 'https://docs.google.com/document/d/1gAxtH1fhukNAWPnWSfflYai9NQe0qsh6OVcnn7FzlKU/edit?usp=sharing'
 PY_PATH = 'C:/Python27/'
 JIRA_MANAGE_FOL = 'jira_manager'
 SETTINGS_SUFIX = '__settings__.yaml'
