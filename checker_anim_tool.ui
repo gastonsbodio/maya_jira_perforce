@@ -6,66 +6,46 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>450</width>
-    <height>590</height>
+    <width>490</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Animation Checker</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QLabel" name="lab_art_root">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>20</y>
-      <width>311</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox_2">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>50</y>
-      <width>251</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>41</width>
+      <x>50</x>
+      <y>70</y>
+      <width>91</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Project</string>
+     <string>Depot Anim Root</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="lab_Unreal_anim_root">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>50</y>
-      <width>31</width>
-      <height>16</height>
+      <x>50</x>
+      <y>130</y>
+      <width>121</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Link</string>
+     <string>Unreal Local Anim Root</string>
     </property>
    </widget>
    <widget class="QTableWidget" name="table_anim_check">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>90</y>
-      <width>411</width>
+      <y>190</y>
+      <width>451</width>
       <height>411</height>
      </rect>
     </property>
@@ -1128,8 +1108,8 @@ background-color: #ff5733;
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>520</y>
-      <width>411</width>
+      <y>610</y>
+      <width>451</width>
       <height>23</height>
      </rect>
     </property>
@@ -1140,18 +1120,87 @@ background-color: #ff5733;
      <string>Start Checking</string>
     </property>
    </widget>
+   <widget class="QLineEdit" name="lineEd_google_sheet_na">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>231</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lab_googlesheet_na">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>10</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Sheet Name</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEd_depot_anim_root">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>451</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEd_unreal_anim_root">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>150</y>
+      <width>451</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>450</width>
+     <width>490</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuinstructions">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="title">
+     <string>_____________________________________________________________</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuinstruction">
+    <property name="title">
+     <string>Instructions</string>
+    </property>
+    <addaction name="actionfirst_steps"/>
+   </widget>
+   <addaction name="menuinstructions"/>
+   <addaction name="menuinstruction"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionfirst_steps_">
+   <property name="text">
+    <string>first steps</string>
+   </property>
+  </action>
+  <action name="actionfirst_steps">
+   <property name="text">
+    <string>first steps</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
