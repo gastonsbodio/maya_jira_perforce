@@ -39,9 +39,11 @@ if dll.SHGetSpecialFolderPathW(None, buf, 0x0005, False):
 	var_prG1 = buf.value + "\\Pr_G"
 	var_prG = var_prG1.replace('\\','/')
 if var_prG1 + '\\PACKAGES' not in sys.path:
-	sys.path.append( var_prG1 + '\\PACKAGES')
+    if var_prG1 + '\\PACKAGES' not in sys.path:
+		sys.path.append( var_prG1 + '\\PACKAGES')
 if var_prG1 not in sys.path:
-	sys.path.append(var_prG1)
+    if var_prG1 not in sys.path:
+		sys.path.append(var_prG1)
 
 with open( var_prG + '/PACKAGES/creds/client_secrets.json' ) as fi:
 	diccClieSecr = fi.readlines()[0]

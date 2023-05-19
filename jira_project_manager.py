@@ -48,7 +48,8 @@ try:
     reload(hlp)
     reload(pr)
     reload(ev)
-except Exception:
+except Exception as err:
+    print (err)
     importlib.reload(gs)
     importlib.reload(jq)
     importlib.reload(de)
@@ -56,27 +57,13 @@ except Exception:
     importlib.reload(pr) 
     importlib.reload(ev) 
 
-import maya.cmds as cmds
-#import pymel.core as pm
-import maya.OpenMaya as OpenMaya
-import maya.OpenMayaUI as mui
-from shiboken2 import wrapInstance
-
-def getWindow(QWidget):
-    pointer = mui.MQtUtil.mainWindow()
-    if pointer is not None:
-        try:
-            return wrapInstance(long(pointer), QWidget)
-        except Exception:
-            return wrapInstance(int(pointer), QWidget)
-
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super(MyMainWindow, self).__init__( ) # Call the inherited classes __init__ method
         loader = QUiLoader()
         uifile = QtCore.QFile( de.SCRIPT_FOL.replace('\\','/') +'/'+ de.MANAGE_PROD_UI)
         uifile.open(QtCore.QFile.ReadOnly)
-        self.ui = loader.load( uifile, getWindow(QWidget) )
+        self.ui = loader.load( uifile, ev.getWindow(QWidget) )
         self.initialize_widget_conn()
 
     def initialize_widget_conn(self):

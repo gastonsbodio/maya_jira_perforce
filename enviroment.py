@@ -5,10 +5,12 @@ try:
 except Exception:
     pass
 
-excutSource = type (sys.stdout)
+
 ENVIROMENT = ''
-if len(str(excutSource).split("maya")) > 1 :
-    ENVIROMENT = 'Maya'
+for path in sys.path:
+    if "Maya2020" in path or "Maya2021" in path or "Maya2022" in path or "Maya2023" in path:
+        ENVIROMENT = 'Maya'
+        break
 if ENVIROMENT == 'Maya': 
     import maya_custom_cmd as com
     try:

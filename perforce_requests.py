@@ -15,7 +15,8 @@ try:
 except Exception:
     importlib.reload(de)
     importlib.reload(hlp)
-sys.path.append( de.PY_PACKAGES )
+if de.PY_PACKAGES not in sys.path:
+    sys.path.append( de.PY_PACKAGES )
 try:
     from P4 import P4,P4Exception    # Import the module
 except Exception as e:

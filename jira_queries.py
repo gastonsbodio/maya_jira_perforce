@@ -16,7 +16,8 @@ try:
 except Exception:
     importlib.reload(de)
     importlib.reload(hlp)
-sys.path.append( de.PY_PACKAGES )
+if de.PY_PACKAGES not in sys.path:
+    sys.path.append( de.PY_PACKAGES )
 try:
     from jira import JIRA
 except Exception:

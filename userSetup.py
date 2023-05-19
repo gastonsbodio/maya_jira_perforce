@@ -7,7 +7,8 @@ buf = ctypes.create_unicode_buffer(MAX_PATH + 1)
 if dll.SHGetSpecialFolderPathW(None, buf, 0x0005, False):
     USER_DOC = buf.value
 SCRIPT_FOL = USER_DOC + "\\prod_manager\\jira_manager"
-sys.path.append( SCRIPT_FOL )
+if SCRIPT_FOL not in sys.path:
+    sys.path.append( SCRIPT_FOL )
 import helper as hlp
 import jira_project_manager as jiraM
 import definitions as de
@@ -20,7 +21,8 @@ except Exception:
     reload(hlp)
     reload(jiraM)
     reload(de)
-sys.path.append( de.PY_PACKAGES )
+if de.PY_PACKAGES not in sys.path:
+    sys.path.append( de.PY_PACKAGES )
 import pymel.core as pm
 
 def launch_manager():

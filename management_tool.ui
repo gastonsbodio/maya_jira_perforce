@@ -53,7 +53,7 @@
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>100</y>
+        <y>340</y>
         <width>181</width>
         <height>22</height>
        </rect>
@@ -63,20 +63,20 @@
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>70</y>
+        <y>310</y>
         <width>141</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Choose Project</string>
+       <string>Choose Jira  Project</string>
       </property>
      </widget>
      <widget class="QLabel" name="lab_comb_user">
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>180</y>
+        <y>70</y>
         <width>141</width>
         <height>21</height>
        </rect>
@@ -89,7 +89,7 @@
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>339</y>
+        <y>209</y>
         <width>401</width>
         <height>21</height>
        </rect>
@@ -99,7 +99,7 @@
       <property name="geometry">
        <rect>
         <x>90</x>
-        <y>310</y>
+        <y>180</y>
         <width>141</width>
         <height>21</height>
        </rect>
@@ -108,17 +108,17 @@
        <string>Jira Api Key</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushBut_set_apiK">
+     <widget class="QPushButton" name="pushBut_set_jira_login">
       <property name="geometry">
        <rect>
-        <x>360</x>
-        <y>370</y>
-        <width>75</width>
+        <x>334</x>
+        <y>260</y>
+        <width>101</width>
         <height>23</height>
        </rect>
       </property>
       <property name="text">
-       <string>Set Api Key</string>
+       <string>Login to Jira</string>
       </property>
      </widget>
      <widget class="QLabel" name="lab_jira_log">
@@ -199,16 +199,6 @@
        <string>Set Perforce Server</string>
       </property>
      </widget>
-     <widget class="QComboBox" name="comboB_workSpace">
-      <property name="geometry">
-       <rect>
-        <x>620</x>
-        <y>340</y>
-        <width>271</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QLabel" name="lab_comb_workspace">
       <property name="geometry">
        <rect>
@@ -235,40 +225,37 @@
        <string>p4.ad.straykitestudios.com:1666</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushBut_set_user_per">
+     <widget class="QPushButton" name="pushBut_login_perf">
       <property name="geometry">
        <rect>
         <x>790</x>
-        <y>210</y>
+        <y>380</y>
         <width>101</width>
         <height>23</height>
        </rect>
       </property>
       <property name="text">
-       <string>Set Perforce User</string>
+       <string>Login to Perforce</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="lineEd_jira_user">
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>210</y>
+        <y>100</y>
         <width>231</width>
         <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushBut_set_jira_user">
+     <widget class="QLineEdit" name="lineEd_perf_worksp">
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>240</y>
-        <width>91</width>
-        <height>23</height>
+        <x>620</x>
+        <y>340</y>
+        <width>271</width>
+        <height>21</height>
        </rect>
-      </property>
-      <property name="text">
-       <string>Set User Email</string>
       </property>
      </widget>
     </widget>

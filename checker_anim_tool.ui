@@ -1133,6 +1133,9 @@ background-color: #ff5733;
       <height>23</height>
      </rect>
     </property>
+    <property name="toolTipDuration">
+     <number>8</number>
+    </property>
     <property name="text">
      <string>Start Checking</string>
     </property>

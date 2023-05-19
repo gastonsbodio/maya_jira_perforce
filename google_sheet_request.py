@@ -13,8 +13,10 @@ try:
 except Exception:
     importlib.reload( de )
     importlib.reload( hlp )
-sys.path.append( de.PY_PACK_MOD )
-sys.path.append( de.PY2_PACKAGES )
+if de.PY_PACK_MOD not in sys.path:
+    sys.path.append( de.PY_PACK_MOD )
+if de.PY2_PACKAGES not in sys.path:
+    sys.path.append( de.PY2_PACKAGES )
 #try:
 import py2.pydrive
 from py2.pydrive import auth
