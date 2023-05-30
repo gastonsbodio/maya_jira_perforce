@@ -22,3 +22,5 @@ if ENVIROMENT == 'Maya':
         return com.get_current_sc()
     def getWindow(QWidget):
         return com.getWindow(QWidget)
+    def create_empty_task( fi_na ):
+        com.create_empty_task( fi_na )

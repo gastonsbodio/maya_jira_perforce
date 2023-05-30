@@ -32,7 +32,8 @@ class GoogleSheetRequests():
             [dicc]: [dicc with master user and pass]
         """
         line = '%s  = sheet.get_all_records()\n' %de.dicc_ji_result
-        file_content = hlp.write_goo_sheet_request ( line , True, 'google_sheet_query.json', de.GOOGLE_SHET_DATA_NA )
+        file_content = hlp.write_goo_sheet_request ( line , True, 'google_sheet_query.json',
+                                                    de.GOOGLE_SHET_DATA_NA , 'Sheet1' )
         hlp.create_python_file ( 'google_sheet_query', file_content )
         hlp.run_py_stand_alone( 'google_sheet_query' )
         dicc = hlp.json2dicc_load( de.PY_PATH  + 'google_sheet_query.json')[0]
@@ -41,16 +42,38 @@ class GoogleSheetRequests():
         os.remove( de.PY_PATH  + 'Execute_google_sheet_query.bat' )
         return dicc['master_user'], dicc['master_pass']
     
-    def get_data_custom_google_sheet( self , google_sheet_doc_na):
+    def get_data_custom_google_sheet( self , google_sheet_doc_na, google_sheet_num):
         """Get data on custom google sheet
         Returns:
             [dicc]: [dicc with master user and pass]
         """
         line = '%s  = sheet.get_all_records()\n' %de.ls_result
-        file_content = hlp.write_goo_sheet_request ( line , True, 'custom_google_doc.json', google_sheet_doc_na)
+        file_content = hlp.write_goo_sheet_request ( line , True, 'custom_google_doc.json',
+                                                    google_sheet_doc_na, google_sheet_num )
         hlp.create_python_file ( 'custom_google_doc', file_content )
         hlp.run_py_stand_alone( 'custom_google_doc' )
         list_dicc = hlp.json2dicc_load( de.PY_PATH  + 'custom_google_doc.json')
+        return list_dicc
+
+    def edit_goog_sheet_cell( self , google_sheet_doc_na, google_sheet_num, google_sheet_col_ls, new_value_ls , rowIdx ):
+        """Get data on custom google sheet
+        Returns:
+            [dicc]: [dicc with master user and pass]
+        """
+        tab = '                '
+        line =               'letCol = None\n'
+        line =  line + tab + 'for i, col in enumerate( %s ):\n' %google_sheet_col_ls
+        line =  line + tab + '    for idx, column in enumerate( %s ):\n' %de.GOOG_SH_NUM_COL
+        line =  line + tab + '        if col == str(sheet.cell(1,column).value ):\n'
+        line =  line + tab + '            letCol = str( %s[idx] )\n' %de.GOOG_SH_ALPHA_LS
+        line =  line + tab + '            break\n'
+        line =  line + tab + '    num = %s + 2 \n' %int( rowIdx ) 
+        line =  line + tab + '    sheet.update_acell( letCol + str( num ), %s[i] )\n' %str( new_value_ls )
+        file_content = hlp.write_goo_sheet_request ( line , True, 'edit_goo_sh_cell.json',
+                                                    google_sheet_doc_na, google_sheet_num )
+        hlp.create_python_file ( 'edit_goo_sh_cell', file_content )
+        hlp.run_py_stand_alone( 'edit_goo_sh_cell' )
+        list_dicc = hlp.json2dicc_load( de.PY_PATH  + 'edit_goo_sh_cell.json')
         return list_dicc
 
 class GoogleDriveQuery():

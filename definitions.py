@@ -36,13 +36,24 @@ SETTINGS_SUFIX = '__settings__.yaml'
 MANAGE_PROD_UI = 'management_tool.ui'
 TASK_CREATION_UI = 'task_creation_panel.ui'
 ANIM_CHECK_UI = 'checker_anim_tool.ui'
+FORBIDDEN_CHARS = [" ","-","_","@","%", "$","?", "!", "|","*",".",",",";"]
 
+###########
 #MASTER_USER = ""
 #MASTER_API_KEY = ""
 
+#### Googlesheets vars
 GOOGLE_SHET_DATA_NA = "jira_manager_data"
 GOOGLE_SHET_ANIM_CHECK = "Task_001"
 GOOG_CONTENT_TOOLS_FOL = "jira_manager"
+GOOGLE_SH_ASS_NA_COL = "asset_name"
+GOOGLE_SH_CREAT_AREA_COL = 'created_area'
+GOOGLE_SH_ISSUE_KEY = 'jira_issue_key'
+GOOG_SH_ALPHA_LS =   ["A","B","C","D","E","F","G","H","I","J", "K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+GOOG_SH_NUM_COL =[ 1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11, 12, 13, 14, 15, 16, 17,18, 19, 20, 21, 22, 23, 24, 25, 26]
+
+
+
 
 ## asset table vars
 assignee = 'Assignee'
@@ -95,5 +106,4 @@ key_connected = 'keyConnected'
 key_errors= 'errors'
 
 #######  anim check tool vars
-
 UNR_EXCEPTION_SUFIXS = [ "_Cinematics.uasset", "_Montage.uasset"]

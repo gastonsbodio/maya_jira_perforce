@@ -33,4 +33,8 @@ def get_script_fol():
 
 def get_current_sc():
     return cmds.file(query=True, sceneName=True)
-    #return str( pm.sceneName() ).split('Path(')[-1].split(')')[0]
+
+def create_empty_task( fi_na ):
+    cmds.file( new=True , force=True )
+    cmds.file(  rename=fi_na )#, force=True )
+    cmds.file( s=True , force=True )

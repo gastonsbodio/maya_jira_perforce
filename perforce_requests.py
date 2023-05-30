@@ -44,7 +44,7 @@ class PerforceRequests():
             return None
         return p4
 
-    def add_and_submit(self, file, comment, server, user, workspace, pyStAl ):
+    def add_and_submit(self, file, comment, server, user, workspace, pyStAl=True ):
         """Add and submit requests.
         Args:
             file ([str]): [file to submit]
@@ -57,11 +57,11 @@ class PerforceRequests():
         if pyStAl == False:
             p4 = self.connection(server, user, workspace)
             p4.run_add(file)
-            p4.run_submit('-d', comment)
+            p4.run_submit('-d', comment, file)
             p4.disconnect()
         else:
             line =        '    p4.run_add("%s")\n' %file
-            line = line + '    p4.run_submit("-d", "%s")\n' %comment
+            line = line + '    p4.run_submit("-d", "%s", "%s")\n' %( comment, file )
             file_content = hlp.write_perforce_command_file ( line , True, 'addsubmit_perf_query.json', server, user, workspace)
             hlp.create_python_file ( 'add_and_submit', file_content )
             hlp.run_py_stand_alone( 'add_and_submit' )
@@ -165,7 +165,7 @@ class PerforceRequests():
             hlp.run_py_stand_alone( 'pull_file' )
             return hlp.json2dicc_load( de.PY_PATH  + 'pull_perf_query.json')
 
-    def checkout_file( self, local_path_file ,server, user, workspace, pyStAl):
+    def checkout_file( self, local_path_file ,server, user, workspace, pyStAl=True):
         """Make a file editable after dowloading from perforce ( checkout file)
         Args:
             local_path_file ([str]): [local file file path]

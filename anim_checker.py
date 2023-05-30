@@ -53,20 +53,6 @@ class AnimCheckerApp(QMainWindow):
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.load_table( self.ui.table_anim_check, 'populate' , SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT ) 
         self.ui.push_butt_start_check.clicked.connect( self.check_trigged_action )
-
-    def get_google_doc_data( self, sheet_na ):
-        """initialize master jira credentials.
-        """
-        goo_sheet = gs.GoogleSheetRequests()
-        if sheet_na != '' and sheet_na != 'None':
-            dicc =  goo_sheet.get_data_custom_google_sheet( sheet_na )
-            if dicc[ de.key_errors ] == '[]':
-                return dicc[ de.ls_result ] 
-            else:
-                QMessageBox.information(self, u'Googlesheet error.', str( dicc[de.key_errors] )  )
-                return []
-        else:
-            return []
     
     def set_table_columns(self, table):
         for i, header in enumerate (de.CHECK_ANIM_LS):
@@ -98,7 +84,7 @@ class AnimCheckerApp(QMainWindow):
                 ma_files_ls = []
                 fbx_files_ls = []
         try:
-            tasks_ls_diccs = self.get_google_doc_data( sheet_doc_name )
+            tasks_ls_diccs = hlp.get_google_doc_data(self, QMessageBox, gs, sheet_doc_name , 'sheet1')
             #tasks_ls_diccs = []
         except Exception as err:
             print (err)

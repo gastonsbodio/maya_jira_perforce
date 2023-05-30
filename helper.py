@@ -150,13 +150,15 @@ def solve_path( root_state, asset_na, key_path,
     Returns:
         [str]: [dep path or local path depending is_local value]
     """
-    if root_state == 'local':
-        return local_root + proj_settings['Paths'][key_path].format(char_na = asset_na) 
-    elif root_state == 'depot':
-        return depot_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
-    elif root_state == 'git':
-        return git_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
-
+    if proj_settings['Paths'][key_path].format(char_na = asset_na) != '':
+        if root_state == 'local':
+            return local_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+        elif root_state == 'depot':
+            return depot_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+        elif root_state == 'git':
+            return git_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+    else:
+        return ''
 def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
     path, name = separate_path_and_na( file_path )
     file = name.split('.')[0]
@@ -164,6 +166,34 @@ def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
         if not file.startswith (prefix):
             file = prefix + file
     return file
+
+def get_google_doc_data( app, QMessageBox, gs ,sheet_na ,sheet_num):
+    """read_google_sheet.
+    """
+    goo_sheet = gs.GoogleSheetRequests()
+    if sheet_na != '' and sheet_na != 'None':
+        dicc =  goo_sheet.get_data_custom_google_sheet( sheet_na , sheet_num)
+        if dicc[ de.key_errors ] == '[]':
+            return dicc[ de.ls_result ] 
+        else:
+            QMessageBox.information(app, u'Googlesheet error.', str( dicc[de.key_errors] )  )
+            return []
+    else:
+        return []
+
+def edit_google_sheet_cell( app , QMessageBox , gs , sheet_na , sheet_num , goog_sh_col_ls , new_value_ls , rowIdx ):
+    """read_google_sheet.
+    """
+    goo_sheet = gs.GoogleSheetRequests()
+    if sheet_na != '' and sheet_na != 'None':
+        dicc =  goo_sheet.edit_goog_sheet_cell(  sheet_na, sheet_num, goog_sh_col_ls , new_value_ls , rowIdx )
+        if dicc[ de.key_errors ] == '[]':
+            return dicc[ de.ls_result ] 
+        else:
+            QMessageBox.information( app, u'Googlesheet error.', str( dicc[de.key_errors] )  )
+            return []
+    else:
+        return []
 
 def run_py_stand_alone( python_file_na , with_console = False):
     """create a bat file witch run python stand alone
@@ -225,7 +255,7 @@ def write_perforce_command_file ( line, if_result, result_fi_na, perf_server, pe
         file_content = file_content +'    fileFa.close()\n'
     return file_content
 
-def write_jira_command_file( line, if_result, result_fi_na , user , server, apikey ):
+def write_jira_command_file( line, if_result, result_fi_na , user , server, apikey, with_jira_q = True ):
     """Specific Jira command, will be the content on a python file
         not possible to run Jira commands when you launch Maya with Gearbox launcher.
     Args:
@@ -255,7 +285,10 @@ def write_jira_command_file( line, if_result, result_fi_na , user , server, apik
     file_content = file_content +    'try:\n'
     file_content = file_content +    '    jira_m = jq.JiraQueries()\n'
     file_content = file_content +    '    jira =  JIRA(options, basic_auth=( "%s", "%s" ))\n'%( user, apikey )
-    file_content = file_content +    '    ' + line.format( object = 'jira_m.')  + '\n'
+    if with_jira_q :
+        file_content = file_content +    '    ' + line.format( object = 'jira_m.')  + '\n'
+    else:
+        file_content = file_content +    '    ' + line + '\n'
     file_content = file_content +    'except Exception as err:\n'
     file_content = file_content +    '    error_ls = ["Jira Error"]\n'
     file_content = file_content +    '    error_ls.append(err)\n'
@@ -288,17 +321,20 @@ def write_request_jira_file( line, if_result, result_fi_na ):#
     file_content = file_content +    'import requests\n'
     file_content = file_content +    'from requests.auth import HTTPBasicAuth\n'
     file_content = file_content +    'import json\n'
+    file_content = file_content +    '%s = []\n' %de.ls_ji_result
+    file_content = file_content +    'erro_ls = []\n'
     file_content = file_content +     line  + '\n'
     if if_result:
         file_content = file_content + de.dicc_ji_result +' = {}\n'
         file_content = file_content + de.dicc_ji_result + '["'+ de.ls_ji_result +'"] = '+ de.ls_ji_result+'\n'
+        file_content = file_content + de.dicc_ji_result + '["'+ de.key_errors +'"] = erro_ls\n'
         file_content = file_content +'json_object = json.dumps( {dicc_ji_result}, indent = 2 )\n'.format( dicc_ji_result = de.dicc_ji_result ) 
         file_content = file_content + 'with open( "{path}", "w") as fileFa:\n'.format( path = de.PY_PATH + result_fi_na )
         file_content = file_content +'    fileFa.write( str(json_object) )\n'
         file_content = file_content +'    fileFa.close()\n'
     return file_content
 
-def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA):
+def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA , sheet_num ):
     """Specific Jira command, will be the content on a python file made with python requests.
         not possible to run Jira commands when you launch Maya with Gearbox launcher.
     Args:
@@ -327,8 +363,12 @@ def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA
     file_content = file_content + '%s = []\n' %de.ls_result
     file_content = file_content + 'try:\n'
     file_content = file_content + '    client = gspread.authorize (creds)\n'
-    file_content = file_content + '    sheet = client.open( "%s" ).sheet1\n' %GOOGLE_SHET_DATA_NA
-    file_content = file_content + '    ' +  line  + '\n'
+    file_content = file_content + '    sheetLs = client.openall( "%s" )\n' %( GOOGLE_SHET_DATA_NA )
+    file_content = file_content + '    for she in sheetLs:\n'
+    file_content = file_content + '        worksheets = she.worksheets()\n'
+    file_content = file_content + '        for sheet in worksheets:\n'
+    file_content = file_content + '           if "%s" in str(sheet):\n'%(sheet_num)
+    file_content = file_content + '                ' +  line  + '\n'
     file_content = file_content + 'except Exception as err:\n'
     file_content = file_content + '    error_ls = ["G Sheet Error"]\n'
     file_content = file_content + '    error_ls.append(err)\n'

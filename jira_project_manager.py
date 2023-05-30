@@ -441,7 +441,7 @@ class table_features( ):#QWidget ):
                 if os.path.exists(thumbLocalPath):
                     perf = pr.PerforceRequests()
                     try:
-                        perf.checkout_file( thumbLocalPath+thumb_fi_na , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE, True)
+                        perf.checkout_file( thumbLocalPath+thumb_fi_na , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
                         hlp.make_read_write( thumbLocalPath+thumb_fi_na )
                         os.remove( thumbLocalPath+thumb_fi_na )
                     except Exception as er:
@@ -450,7 +450,7 @@ class table_features( ):#QWidget ):
                     label_thumb = getThumbnClass( table, thumbLocalPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum)   )
                     table.setCellWidget(table.currentRow(), colum_idx, label_thumb )
                     comment='new thumbnail created'
-                    dicc = perf.add_and_submit( thumbLocalPath+thumb_fi_na, comment , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE ,True )
+                    dicc = perf.add_and_submit( thumbLocalPath+thumb_fi_na, comment , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE )
                     if dicc[de.key_errors] != '[]':
                         QMessageBox.information(self.main_widg, u' ', str(dicc[de.key_errors]))
                 else:
