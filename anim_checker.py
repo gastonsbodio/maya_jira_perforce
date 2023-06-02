@@ -65,6 +65,7 @@ class AnimCheckerApp(QMainWindow):
         table.setColumnWidth( 2,  50 )
         table.setColumnWidth( 3,  50 )
 
+
     def  load_table(self, table, type, sheet_doc_name, depot_anim_root, unreal_anim_root):
         """populate qtable with values.
         Args:
@@ -84,7 +85,7 @@ class AnimCheckerApp(QMainWindow):
                 ma_files_ls = []
                 fbx_files_ls = []
         try:
-            tasks_ls_diccs = hlp.get_google_doc_data(self, QMessageBox, gs, sheet_doc_name , 'sheet1')
+            tasks_ls_diccs = hlp.get_google_doc_data(self, QMessageBox, gs, sheet_doc_name , 'Sheet1')
             #tasks_ls_diccs = []
         except Exception as err:
             print (err)

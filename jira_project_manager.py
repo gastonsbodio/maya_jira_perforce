@@ -108,7 +108,7 @@ class MyMainWindow(QMainWindow):
         """populate projects combob.
         """
         self.ui.comboB_projects.clear()
-        dicc = self.jira_m.get_projects( de.SERVER , self.USER , self.APIKEY )
+        dicc = self.jira_m.get_projects( de.JI_SERVER , self.USER , self.APIKEY )
         if dicc[ de.key_errors ] != '[]':
             QMessageBox.information(self, u'Loading projects error.', str( dicc[de.key_errors] )  )
         for proj in ['None'] + dicc[ de.ls_ji_result ]:
@@ -239,7 +239,7 @@ class table_features( ):#QWidget ):
         """
         if self.PROJECT_KEY != '' and self.PROJECT_KEY != 'None':
             if self.APIKEY != 'None' and self.USER != 'None':
-                dicc = self.jira_m.get_custom_user_issues(self.USER, de.SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY, 'jira' )
+                dicc = self.jira_m.get_custom_user_issues(self.USER, de.JI_SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY, 'jira' )
                 if dicc[ de.key_errors ] != '[]':
                     QMessageBox.information(self.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
             return dicc[de.ls_ji_result]
@@ -466,7 +466,7 @@ class table_features( ):#QWidget ):
             table ([qtablewidget]): [needed table]
             position ([qposition]): [not instantiable var]
         """
-        dicc = self.jira_m.get_all_statuses_types(self.USER, de.SERVER, self.APIKEY)
+        dicc = self.jira_m.get_all_statuses_types(self.USER, de.JI_SERVER, self.APIKEY)
         if dicc[ de.key_errors ] != '[]':
             QMessageBox.information(self.main_widg, u'Getting status types error.', str( dicc[de.key_errors] )  )
         menu_status = QMenu()
@@ -476,7 +476,7 @@ class table_features( ):#QWidget ):
         row = table.currentRow()
         issue_key = self.id_rows[str(row)]
         if actionStatus != None:
-            dicc = self.jira_m.change_issue_status( issue_key, self.USER, de.SERVER, self.APIKEY, actionStatus.text())
+            dicc = self.jira_m.change_issue_status( issue_key, self.USER, de.JI_SERVER, self.APIKEY, actionStatus.text())
             if dicc[ de.key_errors ] != '[]':
                 QMessageBox.information(self.main_widg, u'Changing status error.', str( dicc[de.key_errors] )  )
             if dicc [de.ls_ji_result ] != []:
