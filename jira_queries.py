@@ -63,10 +63,10 @@ class JiraQueries():
                 main_args_issue_dicc[de.status] = status
                 title = issue.fields.summary
                 main_args_issue_dicc[de.title] = title
-                labels = issue.fields.labels
-                if labels != []:
-                    main_args_issue_dicc[de.area] = str( labels[0].split(de.area+'_')[-1] )
-                    main_args_issue_dicc[de.asset_na] = str( labels[1].split(de.asset_na+'_')[-1] )
+                labels_ls = issue.fields.labels
+                if labels_ls != []:
+                    main_args_issue_dicc[ de.area ] = self.dicc_label_value( labels_ls, de.area )
+                    main_args_issue_dicc[ de.asset_na ] = self.dicc_label_value( labels_ls, de.asset_na )
                 else:
                     main_args_issue_dicc[de.area] = ''
                     main_args_issue_dicc[de.asset_na] = ''
@@ -85,6 +85,13 @@ class JiraQueries():
             hlp.create_python_file ('get_task_dicc', file_content)
             hlp.run_py_stand_alone( 'get_task_dicc' )
             return hlp.json2dicc_load( de.PY_PATH  + 'task_dicc_request.json')
+
+    def dicc_label_value(self, label_ls, prefix):
+        result = ''
+        for label_item in label_ls:
+            if len ( label_item.split(prefix+'_') ) > 1:
+                result =  str( label_item.split(prefix+'_')[-1] )
+        return result
 
     def get_issues_by_status(self, user, server, apikey, status, API_KEY, pyStAl = True):
         """query issues setted previusly with some status
