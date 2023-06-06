@@ -53,9 +53,14 @@ class TaskCreationPanel(QMainWindow):
         self.load_issues_types_combo()
         self.load_area_combo()
         self.load_combo_asset_na()
-        hlp.set_logged_data_on_combo( self.ui.comboB_issue_type, de.issue_type_asset)
-        self.ui.pushBut_create_one_issue.clicked.connect( self.create_issue )
-        self.ui.pushBut_tag_issue.clicked.connect( self.tag_issue )
+        self.ui.radioBut_choose.clicked.connect(lambda:  self.radio_but_clic_action() )
+        self.ui.radioBut_create.clicked.connect(lambda: self.radio_but_clic_action() )
+        self.default_radio_states()
+        self.ui.radioBut_choose.nextCheckState()
+        hlp.set_logged_data_on_combo( self.ui.comboB_issue_type, de.issue_type_asset )
+        self.ui.pushBut_create_one_issue.clicked.connect( lambda: self.create_issue() )
+        self.ui.pushBut_tag_issue.clicked.connect( lambda: self.tag_issue() )
+        self.ui.pushBut_create_file_template.clicked.connect( lambda: self.create_template_but_action() )
 
     def load_assign_user_combo(self):
         """populate assignable users combob.
@@ -108,20 +113,8 @@ class TaskCreationPanel(QMainWindow):
             assign_user_id = self.dicc_users_id [ assign_name ]
             issue_key = self.jira_creation_task_issue( assign_user_id , asset_na , area  )
             area_done_dicc [ area ] = issue_key
-            if str( self.PROJ_SETTINGS ['KEYWORDS']['rig'] ) == str( area ):
-                template_full_path = hlp.solve_path( 'local', '', 'RigTemplateMalePath' , self.LOCAL_ROOT,  '', '' ,  self.PROJ_SETTINGS)
-                asset_area_full_path = hlp.solve_path( 'local', asset_na , 'Rig_Char_Path' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS)
-            elif str( self.PROJ_SETTINGS ['KEYWORDS']['mod'] ) == str( area ):
-                template_full_path = hlp.solve_path( 'local', '', 'ModTemplateMalePath' , self.LOCAL_ROOT,  '', '' ,  self.PROJ_SETTINGS)
-                asset_area_full_path = hlp.solve_path( 'local', asset_na , 'Mod_Char_Path' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS)
-            if template_full_path != '':
-                source_path , source_name = hlp.separate_path_and_na( template_full_path )
-            else:
-                source_path , source_name = ('','')
-            target_path , target_name = hlp.separate_path_and_na( asset_area_full_path )
-            self.copy_local_asset_template(  target_path, source_path, target_name , source_name )
-            self.perf_task_submit( asset_na, area, target_path+target_name )
-            self.set_new_values_on_sheet( asset_na, area_done_dicc , row_idx )
+            self.create_template_and_submit( asset_na , area )
+            self.set_new_values_on_sheet( asset_na , area_done_dicc , row_idx )
         else:
             QMessageBox.information(self, u'Task already created', asset_na + ' ' + area )
 
@@ -186,10 +179,17 @@ class TaskCreationPanel(QMainWindow):
                             break
         return key_permission , area_done_dicc, row_idx
 
+    def get_asset_na_and_area(self):
+        if self.ui.radioBut_choose.isChecked():
+            asset_na = str( self.ui.comboB_asset_names.currentText() )
+        else:
+            asset_na = str( self.ui.lineEd_new_asset_na.text() )
+        area = str( self.ui.comboB_asset_area_tag.currentText() )
+        return asset_na, area
+
     def tag_issue(self):
         issue_key = str( self.ui.lineEd_issue_key.text() )
-        asset_na = str( self.ui.comboB_asset_names.currentText() )
-        area = str( self.ui.comboB_asset_area_tag.currentText() )
+        asset_na, area = self.get_asset_na_and_area()
         key_permission , area_done_dicc , row_idx = self.check_created_task( area, asset_na )
         if key_permission:
             if ' ' not in issue_key:
@@ -200,3 +200,37 @@ class TaskCreationPanel(QMainWindow):
                 QMessageBox.information(self, u'Issue key error', 'Check you have not spaces on issue key text. ' )
         else:
             QMessageBox.information(self, u'Issue Tagged', 'Issue tagged on track sheet registers' )
+
+    def radio_but_clic_action(self):
+        if self.ui.radioBut_choose.isChecked():
+            self.default_radio_states()
+        else:
+            self.ui.label_choose_asset.setEnabled( False )
+            self.ui.comboB_asset_names.setEnabled( False )
+            self.ui.label_ingest_asset.setEnabled( True )
+            self.ui.lineEd_new_asset_na.setEnabled( True )
+            
+    def default_radio_states(self):
+        self.ui.label_choose_asset.setEnabled( True )
+        self.ui.comboB_asset_names.setEnabled( True )
+        self.ui.label_ingest_asset.setEnabled( False )
+        self.ui.lineEd_new_asset_na.setEnabled( False )
+        
+    def create_template_and_submit(self, asset_na, area ):
+        if str( self.PROJ_SETTINGS ['KEYWORDS']['rig'] ) == str( area ):
+            template_full_path = hlp.solve_path( 'local', '', 'RigTemplateMalePath' , self.LOCAL_ROOT,  '', '' ,  self.PROJ_SETTINGS)
+            asset_area_full_path = hlp.solve_path( 'local', asset_na , 'Rig_Char_Path' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS)
+        elif str( self.PROJ_SETTINGS ['KEYWORDS']['mod'] ) == str( area ):
+            template_full_path = hlp.solve_path( 'local', '', 'ModTemplateMalePath' , self.LOCAL_ROOT,  '', '' ,  self.PROJ_SETTINGS)
+            asset_area_full_path = hlp.solve_path( 'local', asset_na , 'Mod_Char_Path' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS)
+        if template_full_path != '':
+            source_path , source_name = hlp.separate_path_and_na( template_full_path )
+        else:
+            source_path , source_name = ('','')
+        target_path , target_name = hlp.separate_path_and_na( asset_area_full_path )
+        self.copy_local_asset_template(  target_path, source_path, target_name , source_name )
+        self.perf_task_submit( asset_na, area, target_path+target_name )
+        
+    def create_template_but_action(self):
+        asset_na, area = self.get_asset_na_and_area()
+        self.create_template_and_submit( asset_na, area )

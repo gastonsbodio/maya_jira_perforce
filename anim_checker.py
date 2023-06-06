@@ -44,15 +44,16 @@ class AnimCheckerApp(QMainWindow):
         """Initializing functions, var and features.
         """
         self.ui.actionfirst_steps.triggered.connect(self.instruction_menu_action)
-        SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT = self.load_line_edit_text()
+        GOOGLE_DOC_NA, SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT = self.load_line_edit_text()
         self.jira_m = jq.JiraQueries()
         self.USER , self.APIKEY, self.PROJECT_KEY  = hlp.load_jira_vars()
         self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.GIT_ROOT = self.LOCAL_ROOT
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
-        self.load_table( self.ui.table_anim_check, 'populate' , SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT ) 
-        self.ui.push_butt_start_check.clicked.connect( self.check_trigged_action )
+        self.load_table( self.ui.table_anim_check, 'populate' , GOOGLE_DOC_NA , SHEET_NA ,DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT ) 
+        self.ui.push_butt_start_check.clicked.connect( lambda: self.check_trigged_action() )
+
     
     def set_table_columns(self, table):
         for i, header in enumerate (de.CHECK_ANIM_LS):
@@ -66,7 +67,7 @@ class AnimCheckerApp(QMainWindow):
         table.setColumnWidth( 3,  50 )
 
 
-    def  load_table(self, table, type, sheet_doc_name, depot_anim_root, unreal_anim_root):
+    def  load_table(self, table, type, googl_doc_name, sheet_name,depot_anim_root, unreal_anim_root):
         """populate qtable with values.
         Args:
             table ([qtablewid]): [description]
@@ -75,8 +76,6 @@ class AnimCheckerApp(QMainWindow):
         self.set_table_columns( self.ui.table_anim_check )
         if type == 'check':
             unreal_anim_fi_ls = self.list_unreal_files( unreal_anim_root )
-            for f in unreal_anim_fi_ls:
-                print( f )
             try:
                 table_anims, ma_files_ls, fbx_files_ls = self.get_all_anim_check_files( depot_anim_root )
             except Exception as err:
@@ -85,8 +84,7 @@ class AnimCheckerApp(QMainWindow):
                 ma_files_ls = []
                 fbx_files_ls = []
         try:
-            tasks_ls_diccs = hlp.get_google_doc_data(self, QMessageBox, gs, sheet_doc_name , 'Sheet1')
-            #tasks_ls_diccs = []
+            tasks_ls_diccs = hlp.get_google_doc_data(self, QMessageBox, gs, googl_doc_name , sheet_name)
         except Exception as err:
             print (err)
             tasks_ls_diccs = []
@@ -97,22 +95,26 @@ class AnimCheckerApp(QMainWindow):
             for idx, column in enumerate ( de.CHECK_ANIM_LS ):
                 if column == de.anim:
                     item = QTableWidgetItem( str( task[ de.anim_check_colum_sheet_column]  ) )
+                    table.setItem(i ,idx, item)
                 else:
                     item = QTableWidgetItem( '' )
-                    item.setCheckState(QtCore.Qt.CheckState.Unchecked)
+                    checkb =  QCheckBox(None)
+                    checkb.setChecked(False)
+                    table.setCellWidget( i , idx, checkb )
+                    table.setItem(i ,idx, item)
                     item.setTextAlignment( QtCore.Qt.AlignCenter )
                     if type == 'check':
                         table_anim = hlp.only_name_out_extention( task[ de.anim_check_colum_sheet_column ], with_prefix = True, prefix = 'AS_' )
                         if column == de.maya:
                             if table_anim in ma_files_ls :
-                                item.setCheckState( QtCore.Qt.CheckState.Checked )
+                                checkb.setChecked(True)
                         elif column == de.fbx:
                             if table_anim in fbx_files_ls :
-                                item.setCheckState( QtCore.Qt.CheckState.Checked )
+                                checkb.setChecked(True)
                         elif column == de.unreal:
                             if table_anim in unreal_anim_fi_ls :
-                                item.setCheckState( QtCore.Qt.CheckState.Checked )
-                table.setItem(i ,idx, item)
+                                checkb.setChecked(True)
+                    checkb.setEnabled(False)
 
     def get_all_anim_check_files(self, depot_path_root):
         perf = pr.PerforceRequests()
@@ -164,16 +166,20 @@ class AnimCheckerApp(QMainWindow):
         dicc['unreal_a_root'] = hlp.format_path( str(self.ui.lineEd_unreal_anim_root.text() ) )
         hlp.metadata_dicc2json( de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING , dicc )
         
+
     def check_trigged_action(self):
         self.set_settings()
-        sheet_doc_name = str(self.ui.lineEd_google_sheet_na.text( ))
+        google_doc_name = str(self.ui.lineEd_google_sheet_na.text( ))
+        sheet_name = str(self.ui.lineEd_sheet_na.text( ))
         depot_anim_root = hlp.format_path (  str( self.ui.lineEd_depot_anim_root.text( ) )  )
         unreal_anim_root = hlp.format_path ( str(self.ui.lineEd_unreal_anim_root.text( )) )
-        self.load_table( self.ui.table_anim_check, 'check' ,sheet_doc_name, depot_anim_root, unreal_anim_root )
+        self.ui.table_anim_check.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.load_table( self.ui.table_anim_check, 'check' , google_doc_name, sheet_name, depot_anim_root, unreal_anim_root )
 
-    def load_line_edit_text(self):
-        SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT = hlp.load_anim_check_vars()
-        self.ui.lineEd_google_sheet_na.setText(SHEET_NA) 
+    def load_line_edit_text( self ):
+        GOOGLE_DOC_NA, SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT = hlp.load_anim_check_vars( QMessageBox, self )
+        self.ui.lineEd_google_sheet_na.setText(GOOGLE_DOC_NA) 
+        self.ui.lineEd_sheet_na.setText(SHEET_NA) 
         self.ui.lineEd_depot_anim_root.setText(DEPOT_ANIM_ROOT) 
         self.ui.lineEd_unreal_anim_root.setText(UNREAL_ANIM_ROOT) 
-        return SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT
+        return GOOGLE_DOC_NA , SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT

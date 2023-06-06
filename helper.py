@@ -64,19 +64,26 @@ def load_jira_vars():
         PROJECT_KEY = 'None'
     return  USER , APIKEY, PROJECT_KEY
 
-def load_anim_check_vars():
+def load_anim_check_vars( QMessageBox, app ):
     """instancing anim check tool vars.
     """
     dicc = json2dicc_load( de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING )
     if dicc != {}:
-        SHEET_NA         = str( dicc['sheet_na'] ) 
+        GOOG_DOC_NA      = str( dicc['sheet_na'] )
+        try:
+            SHEET_NA         = str( dicc['form_na'] )
+        except Exception:
+            QMessageBox.information(app, u'Googlesheet error.', 'PLease, delete: '+de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING +"""   
+                                    and fill settings again
+                                    """)
         DEPOT_ANIM_ROOT  = str( dicc['depot_a_root'] )
         UNREAL_ANIM_ROOT = str( dicc['unreal_a_root'] )
     else:
+        GOOG_DOC_NA = 'None'
         SHEET_NA = 'None'
         DEPOT_ANIM_ROOT = 'None'
         UNREAL_ANIM_ROOT = 'None'
-    return  SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT
+    return GOOG_DOC_NA , SHEET_NA , DEPOT_ANIM_ROOT, UNREAL_ANIM_ROOT
 
 def load_perf_vars():
     """instancing loging vars for make it run  Perforce queries.
@@ -159,6 +166,7 @@ def solve_path( root_state, asset_na, key_path,
             return git_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
     else:
         return ''
+
 def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
     path, name = separate_path_and_na( file_path )
     file = name.split('.')[0]

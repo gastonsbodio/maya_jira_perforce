@@ -273,8 +273,9 @@ class table_features( ):#QWidget ):
             char_thumb_path = hlp.solve_path( 'local', task[de.asset_na], 'Char_Thumb_Path' ,
                                             self.LOCAL_ROOT,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS)
             thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( char_thumb_path )
-            label_thumb = getThumbnClass( table,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
-            table.setCellWidget( i , de.THUMB_IDX, label_thumb )
+            if os.path.exists(thumbMediaPath+thumb_fi_na):
+                label_thumb = getThumbnClass( None,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
+                table.setCellWidget( i , de.THUMB_IDX, label_thumb )
             for idx, column in enumerate (de.HEADER_LS):
                 try:
                     item = QTableWidgetItem( str( task[column] ) )
@@ -423,7 +424,7 @@ class table_features( ):#QWidget ):
         thumb_fi = os.path.join(  local_path, thumb_fi_na)
         if dicc[de.key_errors] == '[]':
             if os.path.isfile( thumb_fi ):
-                label_thumb = getThumbnClass( table, local_path +thumb_fi_na,   (de.width_as_thum , de.height_as_thum)   )
+                label_thumb = getThumbnClass( None, local_path +thumb_fi_na,   (de.width_as_thum , de.height_as_thum)   )
                 table.setCellWidget(table.currentRow(), colum_idx, label_thumb )
         else:
             QMessageBox.information(self.main_widg, u'Dowloading humbnail error.', str( dicc[de.key_errors] )  )
@@ -447,7 +448,7 @@ class table_features( ):#QWidget ):
                     except Exception as er:
                         print(er)
                     ev.com.thumbnail_cmd( de.height_as_thum, de.width_as_thum, thumbLocalPath, thumb_fi_na)
-                    label_thumb = getThumbnClass( table, thumbLocalPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum)   )
+                    label_thumb = getThumbnClass( None, thumbLocalPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum)   )
                     table.setCellWidget(table.currentRow(), colum_idx, label_thumb )
                     comment='new thumbnail created'
                     dicc = perf.add_and_submit( thumbLocalPath+thumb_fi_na, comment , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE )

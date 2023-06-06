@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab_creation">
      <attribute name="title">
@@ -196,7 +196,7 @@
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>320</y>
+        <y>310</y>
         <width>121</width>
         <height>22</height>
        </rect>
@@ -215,35 +215,11 @@
        <string>Asset Area</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_asset_name">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>150</y>
-        <width>111</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string> Associate task with 
-following asset name</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="comboB_asset_names">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>200</y>
-        <width>121</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushBut_tag_issue">
       <property name="geometry">
        <rect>
         <x>180</x>
-        <y>400</y>
+        <y>410</y>
         <width>161</width>
         <height>23</height>
        </rect>
@@ -256,11 +232,132 @@ following asset name</string>
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>70</y>
+        <y>60</y>
         <width>113</width>
         <height>20</height>
        </rect>
       </property>
+     </widget>
+     <widget class="QPushButton" name="pushBut_create_file_template">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>370</y>
+        <width>161</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Create File Template</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>130</y>
+        <width>311</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string/>
+      </property>
+      <widget class="QLineEdit" name="lineEd_new_asset_na">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>80</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="readOnly">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboB_asset_names">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>32</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_ingest_asset">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>60</y>
+         <width>91</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Ingest new asset</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_choose_asset">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>10</y>
+         <width>111</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Choose existing asset</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_associates">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>40</y>
+         <width>111</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string> Associates task with 
+     left asset name</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="radioBut_create">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>60</y>
+         <width>21</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
+      </widget>
+      <widget class="QRadioButton" name="radioBut_choose">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>40</y>
+         <width>21</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
+      </widget>
      </widget>
     </widget>
    </widget>
@@ -279,4 +376,7 @@ following asset name</string>
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
