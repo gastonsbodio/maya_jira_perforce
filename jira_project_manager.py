@@ -80,7 +80,7 @@ class MyMainWindow(QMainWindow):
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.ui.comboB_projects.currentIndexChanged.connect(lambda: self.jira_combo_change_ac(1))
         self.ui.lineEd_jira_user.setText( self.USER )
-        self.ui.pushBut_set_jira_login.clicked.connect( self.jira_login_action )
+        self.ui.pushBut_set_jira_login.clicked.connect( lambda: self.jira_login_action() )
 
         self.ui.pushBut_login_perf.clicked.connect(lambda: self.perf_combo_change_ac(1))
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
@@ -89,14 +89,8 @@ class MyMainWindow(QMainWindow):
         self.t_fea.populate_table( self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
         self.t_fea.generate_menu_dicc()
-        self.ui.pushBut_reload_tables.clicked.connect( self.t_fea.refresh_tables )
-        self.ui.actionGet_Jira_Api_Key.triggered.connect(self.get_api_token_help)
-
-    #def get_master_creds( self ):
-    #    """initialize master jira credentials.
-    #    """
-    #    goo_sheet = gs.GoogleSheetRequests()
-    #    self.MASTER_USER, self.MASTER_API_KEY = goo_sheet.get_master_credentials()
+        self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables() )
+        self.ui.actionGet_Jira_Api_Key.triggered.connect( lambda:  self.get_api_token_help() )
 
     def get_api_token_help(self):
         """Browse help for get jira api token
@@ -145,21 +139,6 @@ class MyMainWindow(QMainWindow):
                 QMessageBox.information(self, u'Loading perf workspaces error.', str( dicc[de.key_errors] )  )
         else:
             self.worksp_ls = []
-    #def load_workspace_combo(self):
-    #    """populate workspace combob.
-    #    """
-    #    self.ui.comboB_workSpace.clear()
-    #    perf = pr.PerforceRequests()
-    #    dicc = perf.workspaces_ls( True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
-    #    self.worksp_ls = dicc[de.ls_result]
-    #    if dicc[de.key_errors] == '[]':
-    #        for proj in ['None']+self.worksp_ls:
-    #            try:
-    #                self.ui.comboB_workSpace.addItem(proj['client'])
-    #            except:
-    #                pass
-    #    else:
-    #        QMessageBox.information(self, u'Loading perf workspaces error.', str( dicc[de.key_errors] )  )
 
     def jira_login_action(self):
         self.jira_combo_change_ac(2)
@@ -270,8 +249,9 @@ class table_features( ):#QWidget ):
         for i, task in enumerate(tasks_ls_diccs):
             table.setRowHeight(i, de.height_as_thum )
             self.id_rows[str(i)] = task['Id']
-            char_thumb_path = hlp.solve_path( 'local', task[de.asset_na], 'Char_Thumb_Path' ,
-                                            self.LOCAL_ROOT,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS)
+            dicc = { 'char_na' : task[de.asset_na]}
+            char_thumb_path = hlp.solve_path( 'local', 'Char_Thumb_Path' , self.LOCAL_ROOT , 
+                                            self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS , dicc_ = dicc )
             thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( char_thumb_path )
             if os.path.exists(thumbMediaPath+thumb_fi_na):
                 label_thumb = getThumbnClass( None,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
@@ -374,10 +354,11 @@ class table_features( ):#QWidget ):
         Returns:
             [tuple]: [return to arg as touple format: local full path and perforce repo full path]
         """
-        local_full_path = hlp.solve_path( 'local', asset_na, area+'_Char_Path',
-                                            self.LOCAL_ROOT, self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS)
-        depot_full_path = hlp.solve_path( 'depot', asset_na, area+'_Char_Path',
-                                            self.LOCAL_ROOT, self.DEPOT_ROOT, '' , self.PROJ_SETTINGS)
+        dicc = { 'char_na': asset_na }
+        local_full_path = hlp.solve_path( 'local' , area+'_Char_Path', self.LOCAL_ROOT,
+                                            self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS, dicc_ = dicc )
+        depot_full_path = hlp.solve_path( 'depot', area+'_Char_Path', self.LOCAL_ROOT,
+                                            self.DEPOT_ROOT, '' , self.PROJ_SETTINGS , dicc_ = dicc)
         return local_full_path, depot_full_path
 
     def explore_char_fol(self, asset_na, area):
@@ -397,10 +378,11 @@ class table_features( ):#QWidget ):
             position ([qposition]): [don t need to be instanced]
         """
         asset_na = self.get_text_item_colum( table, de.ASSET_NA_IDX)
-        thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'local', asset_na, 'Char_Thumb_Path', self.LOCAL_ROOT, 
-                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS ) )
-        thumbDepotPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'depot', asset_na, 'Char_Thumb_Path' , self.LOCAL_ROOT, 
-                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS)  )
+        dicc = {'char_na':asset_na}
+        thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'local', 'Char_Thumb_Path', self.LOCAL_ROOT, 
+                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS ), dicc_ = dicc )
+        thumbDepotPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'depot', 'Char_Thumb_Path' , self.LOCAL_ROOT, 
+                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS) , dicc_ = dicc )
         menu_thumb = QMenu()
         doThumbnailAc1 = menu_thumb.addAction( de.do_thumb, lambda: self.do_row_thumb( thumbLocalPath, thumb_fi_na, table , de.THUMB_IDX ) )
         doThumbnailAc2 = menu_thumb.addAction( de.get_thumb , lambda: self.get_thumb_from_depot( thumbDepotPath , thumb_fi_na , table , de.THUMB_IDX) )

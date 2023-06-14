@@ -6,11 +6,12 @@ except Exception:
     pass
 
 
-ENVIROMENT = ''
+ENVIROMENT = 'Windows'
 for path in sys.path:
     if "Maya2020" in path or "Maya2021" in path or "Maya2022" in path or "Maya2023" in path:
         ENVIROMENT = 'Maya'
         break
+
 if ENVIROMENT == 'Maya': 
     import maya_custom_cmd as com
     try:
@@ -24,3 +25,7 @@ if ENVIROMENT == 'Maya':
         return com.getWindow(QWidget)
     def create_empty_task( fi_na ):
         com.create_empty_task( fi_na )
+
+elif ENVIROMENT == 'Windows':
+    def getWindow(QWidget):
+        return None

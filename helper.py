@@ -1,6 +1,7 @@
 ### common functions module
 import sys
 import json
+import ast
 import os
 import stat
 import subprocess
@@ -147,8 +148,8 @@ def format_path(path):
         path = path + '/'
     return path
 
-def solve_path( root_state, asset_na, key_path, 
-            local_root, depot_root, git_root, proj_settings ):
+def solve_path( root_state, key_path, local_root,
+                depot_root, git_root, proj_settings , dicc_ = {}):
     """Retrun local desire path or depot path depending is_local value.
     Args:
         root_state (str): ['local', 'depot', 'git']
@@ -157,13 +158,13 @@ def solve_path( root_state, asset_na, key_path,
     Returns:
         [str]: [dep path or local path depending is_local value]
     """
-    if proj_settings['Paths'][key_path].format(char_na = asset_na) != '':
+    if proj_settings['Paths'][key_path].format( **dicc_) != '': 
         if root_state == 'local':
-            return local_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+            return local_root + proj_settings['Paths'][key_path].format(**dicc_)
         elif root_state == 'depot':
-            return depot_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+            return depot_root + proj_settings['Paths'][key_path].format(**dicc_)
         elif root_state == 'git':
-            return git_root + proj_settings['Paths'][key_path].format(char_na = asset_na)
+            return git_root + proj_settings['Paths'][key_path].format(**dicc_)
     else:
         return ''
 
