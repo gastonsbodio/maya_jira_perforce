@@ -27,6 +27,7 @@ JI_SERVER = "https://genvidtech.atlassian.net"
 JIRA_API_TOKEN_HELP = 'https://docs.searchunify.com/Content/Content-Sources/Atlassian-Jira-Confluence-Authentication-Create-API-Token.htm'
 INSTRUCTION_CHECK_ANIM_TOOL = 'https://docs.google.com/document/d/1gAxtH1fhukNAWPnWSfflYai9NQe0qsh6OVcnn7FzlKU/edit?usp=sharing'
 ANIM_CHECK_TOOL_SETTING ='anim_check_settings.json'
+ANIM_PATH_TASK_CREAT = 'anim_path_creation_tool.json'
 LOGIN_METADATA_FI_NA ='login_metadata.json'
 PERF_LOG_METADATA_FI_NA ='perf_log_metadata.json'
 ROOTS_METAD_FI_NA = 'roots_metadata.json'

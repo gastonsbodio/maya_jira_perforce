@@ -158,7 +158,7 @@ def solve_path( root_state, key_path, local_root,
     Returns:
         [str]: [dep path or local path depending is_local value]
     """
-    if proj_settings['Paths'][key_path].format( **dicc_) != '': 
+    if proj_settings['Paths'][ key_path ].format( **dicc_) != '': 
         if root_state == 'local':
             return local_root + proj_settings['Paths'][key_path].format(**dicc_)
         elif root_state == 'depot':

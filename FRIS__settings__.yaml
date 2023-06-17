@@ -4,13 +4,15 @@ KEYWORDS:
     mod: Model
     text: Textures
     anim: Anim
+    asset_rig_template: GenericMale_Rig_Starter
 Paths:
-    Rig_Char_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Rig.ma
-    Mod_Char_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Model.ma
+    Rig_Char_Path:       /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Rig.ma
+    Mod_Char_Path:       /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Model.ma
     RigTemplateMalePath: /cypress2/ContentSource/cypress2source/Character/_GenericMale/Maya/GenericMale_Rig_Starter.ma
     AnimRigPath:         /cypress2/ContentSource/cypress2source/Character/{anim_char}/Maya/{anim_char}_Bindpose.ma
+    AnimRigPath_template:         /cypress2/ContentSource/cypress2source/Character/_GenericMale/Maya/GenericMale_Bindpose.ma
     ModTemplateMalePath: /cypress2/ContentSource/cypress2source/Character/_GenericMale/Maya/GenericMale_Model_Starter.ma
-    Char_Thumb_Path: /cypress2/ContentSource/cypress2source/Character/{char_na}/{char_na}_thumbnail.jpg
-    Anim_Path: /frisco_source/Sim/Characters/Focus/FC_001/Anim/{subpath}{anim_na}_v000.ma
-    Anim_Root: /frisco_source/Sim/Characters/Focus/FC_001/Anim/
-    Unreal_Anim_Root: /frisco/client/FriscoGame/Content/Sim/Characters/Cameo/Generic/Art/Anim/
+    Char_Thumb_Path:     /cypress2/ContentSource/cypress2source/Character/{char_na}/{char_na}_thumbnail.jpg
+    Anim_Path:           /frisco_source/Sim/Characters/Focus/FC_001/Anim/{subpath}{anim_na}_v000.ma
+    Anim_Root:           /frisco_source/Sim/Characters/Focus/FC_001/Anim/
+    Unreal_Anim_Root:    /frisco/client/FriscoGame/Content/Sim/Characters/Cameo/Generic/Art/Anim/

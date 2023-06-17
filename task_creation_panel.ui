@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_creation">
      <attribute name="title">
@@ -284,14 +284,14 @@
       <widget class="QLabel" name="label_ingest_asset">
        <property name="geometry">
         <rect>
-         <x>40</x>
+         <x>30</x>
          <y>60</y>
-         <width>91</width>
+         <width>111</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
-        <string>Ingest new item</string>
+        <string>Ingest new item name</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_choose_asset">
@@ -375,6 +375,19 @@
         <width>121</width>
         <height>22</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>160</y>
+        <width>101</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Asset or Animation</string>
       </property>
      </widget>
     </widget>

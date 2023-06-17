@@ -157,12 +157,12 @@ class TaskCreationPanel(QMainWindow):
         key_permission , area_done_dicc , row_idx = self.check_created_task( area, item_na , '')
         if key_permission:
             assign_name = str(self.ui.comboBuser_4_assign.currentText())
+            anim_asset = str(self.ui.comboB_asset_on_anim.currentText())
             assign_user_id = self.dicc_users_id [ assign_name ]
             issue_key = self.jira_creation_task_issue( assign_user_id , item_na , area  )
             area_done_dicc [ area ] = issue_key
-            self.create_template_and_submit( item_na , area )
+            self.create_template_and_submit( item_na , area , anim_asset )
             if area == self.PROJ_SETTINGS ['KEYWORDS']['anim']:
-                anim_asset = str(self.ui.comboB_asset_on_anim.currentText())
                 item_na_colum, created_area_col = (de.GOOGLE_SH_ANI_NA_COL , de.GOOGLE_SH_CREAT_AREA_COL )
                 anim_asset_col_ls , anim_asset_ls = ([de.GOOGLE_SH_ANIM_ASSET_COL],[anim_asset])
             else:
@@ -311,42 +311,69 @@ class TaskCreationPanel(QMainWindow):
         self.ui.label_ingest_asset.setEnabled( False )
         self.ui.lineEd_new_asset_na.setEnabled( False )
         
-    def create_template_and_submit(self, item_na, area , anim_asset, subpath=''):
+    def create_template_and_submit( self, item_na , area , anim_asset , subpath='' ):
         projsett = self.PROJ_SETTINGS
         localr = self.LOCAL_ROOT
         dicc = { 'char_na' : item_na }
         if str( projsett ['KEYWORDS']['rig'] ) == str( area ):
             type = 'asset'
             template_full_path = hlp.solve_path( 'local', 'RigTemplateMalePath' , localr,  '', '' ,  projsett)
-            item_area_full_path = hlp.solve_path( 'local' , 'Rig_Char_Path' , localr ,  '', '' ,  projsett, dicc_key = dicc)
+            item_area_full_path = hlp.solve_path( 'local' , 'Rig_Char_Path' , localr ,  '', '' ,  projsett, dicc_ = dicc)
         elif str( projsett ['KEYWORDS']['mod'] ) == str( area ):
             type = 'asset'
             template_full_path = hlp.solve_path( 'local', 'ModTemplateMalePath' , localr,  '', '' ,  projsett)
-            item_area_full_path = hlp.solve_path( 'local' , 'Mod_Char_Path' , localr ,  '', '' ,  projsett, dicc_key = dicc)
+            item_area_full_path = hlp.solve_path( 'local' , 'Mod_Char_Path' , localr ,  '', '' ,  projsett, dicc_ = dicc)
         elif str( projsett ['KEYWORDS']['anim'] ) == str( area ):
             type = 'anim'
             dicc = { 'anim_char' : anim_asset }
-            template_full_path = hlp.solve_path( 'local', 'AnimRigPath' , localr ,  '', '' ,  projsett, dicc_key = dicc)
+            anim_asset_fullpath = hlp.solve_path( 'local', 'AnimRigPath' , localr ,  '', '' ,  projsett , dicc_ = dicc)
+            template_full_path = hlp.solve_path( 'local', 'AnimRigPath_template' , localr ,  '', '' ,  projsett )
             item_area_full_path = hlp.solve_path( 'local' , 'Anim_Root' , localr ,  '', '' ,  projsett )
-            self.execute_anim_sub_path( item_na )
+            self.execute_anim_sub_path( item_na , area , anim_asset )
+            
+        if str( projsett ['KEYWORDS']['anim'] ) != str( area ):
+            self.copy_and_submit(   template_full_path , item_area_full_path, area , item_na  , type , anim_asset_fullpath )
+        
+    def copy_and_submit( self, template_full_path , item_area_full_path , area, item_na  , type , anim_asset_fullpath ):
         if type == 'asset':
             source_path , source_name = hlp.separate_path_and_na( template_full_path )
             target_path , target_name = hlp.separate_path_and_na( item_area_full_path )
         elif type == 'anim':
-            print('')
+            item_area_full_path = hlp.json2dicc_load(  de.TEMP_FOL+de.ANIM_PATH_TASK_CREAT  )
+            source_path , source_name = hlp.separate_path_and_na( template_full_path )
+            target_path , target_name = hlp.separate_path_and_na( item_area_full_path )
+            anim_asset_path , anim_asset_name = hlp.separate_path_and_na( anim_asset_fullpath )
         if not os.path.isfile( os.path.join(  source_path , source_name ) ):
-            QMessageBox.information(self, u'PLease Get this file:  ' + source_path + source_name +'''\n
-                                    from Perforce Depot.''')
+            QMessageBox.information( self, u'PLease Get this file:  ' + source_path + source_name +'''\n
+                                    from Perforce Depot.''' )
         else:
             self.copy_local_asset_template(  target_path, source_path, target_name , source_name )
+            if str( self.PROJ_SETTINGS ['KEYWORDS']['rig'] ) == str( area ):
+                self.change_reference(  item_area_full_path , anim_asset_name )#.split('.')[0] )
             self.perf_task_submit( item_na, area, target_path+target_name )
-        
+    
+    def change_reference( self, full_file_path_2_replace , new_asset_name):
+        #pattern_rit_template = str( self.PROJ_SETTINGS ['Path']['RigTemplateMalePath'] )
+        generic_asset_pattern_na = str( self.PROJ_SETTINGS ['KEYWORDS']['asset_rig_template'] )
+        with open( full_file_path_2_replace , 'r') as fi:
+            fiLinesLsStrings = fi.readlines()
+            fi.close()
+        edited_file_ls = []
+        for line in fiLinesLsStrings:
+            if generic_asset_pattern_na in line :
+                line = line.replace( generic_asset_pattern_na , new_asset_name )
+            edited_file_ls.append( line )
+        with open( full_file_path_2_replace, "w") as fileFa:
+            fileFa. writelines(edited_file_ls)
+            fileFa.close()
+
     def create_template_but_action(self):
+        anim_asset = str( self.ui.comboB_asset_on_anim_tag.currentText() )
         asset_na, area = self.get_asset_na_and_area()
-        self.create_template_and_submit( asset_na, area )
+        self.create_template_and_submit( asset_na, area , anim_asset )
         
-    def execute_anim_sub_path( self, anim_na ):
-        widget = asp.AnimSubPath( anim_na = anim_na )
+    def execute_anim_sub_path( self , anim_na , area , anim_asset ):
+        widget = asp.AnimSubPath( anim_na = anim_na , area = area , anim_asset = anim_asset )
         widget.ui.show()
         
 if ev.ENVIROMENT == 'Windows':
