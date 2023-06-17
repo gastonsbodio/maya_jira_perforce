@@ -17,6 +17,7 @@ except Exception:
     importlib.reload(de)
 sys.path.append( de.PY_PACKAGES)
 import yaml as yaml
+import shutil
 
 def make_read_write(filename):
     """set file as read-only false
@@ -432,3 +433,55 @@ def set_logged_data_on_combo( comboB, data2check):
         if str(data2check) == str(item):
             comboB.setCurrentIndex(idx)
             break
+
+def copy_local_asset_template(  target_path, source_path, target_name , source_name):
+    if not os.path.exists ( target_path ):
+        os.makedirs( target_path )
+    shutil.copy2( os.path.join( source_path , source_name  ),
+                        os.path.join( target_path , target_name ) )
+    
+    
+def change_reference( PROJ_SETTINGS, full_file_path_2_replace , new_asset_name):
+    generic_asset_pattern_na = str( PROJ_SETTINGS ['KEYWORDS']['asset_rig_template'] )
+    with open( full_file_path_2_replace , 'r') as fi:
+        fiLinesLsStrings = fi.readlines()
+        fi.close()
+    edited_file_ls = []
+    for line in fiLinesLsStrings:
+        if generic_asset_pattern_na in line :
+            line = line.replace( generic_asset_pattern_na , new_asset_name )
+        edited_file_ls.append( line )
+    with open( full_file_path_2_replace, "w") as fileFa:
+        fileFa. writelines(edited_file_ls)
+        fileFa.close()
+        
+def perf_task_submit( app, QMessageBox , perf , item_na, area, asset_rig_full_path, PERF_SERVER, PERF_USER, PERF_WORKSPACE):
+    # 
+    perf.checkout_file( asset_rig_full_path , PERF_SERVER, PERF_USER, PERF_WORKSPACE)
+    make_read_write( asset_rig_full_path )
+    comment = item_na + ' ' + area +' template created'
+    dicc = perf.add_and_submit( asset_rig_full_path, comment , PERF_SERVER, PERF_USER, PERF_WORKSPACE )
+    if dicc[de.key_errors] == '[]':
+        print('Submmition Done')
+    else:
+        QMessageBox.information( app, u'submittion perf error.', str( dicc[de.key_errors] )  )
+        
+def copy_and_submit( app, PROJ_SETTINGS, QMessageBox , perf ,template_full_path , item_area_full_path 
+                    , area, item_na  , type , anim_asset_fullpath ):
+    if type == 'asset':
+        source_path , source_name = separate_path_and_na( template_full_path )
+        target_path , target_name = separate_path_and_na( item_area_full_path )
+    elif type == 'anim':
+        source_path , source_name = separate_path_and_na( template_full_path )
+        target_path , target_name = separate_path_and_na( item_area_full_path )
+        anim_asset_path , anim_asset_name = separate_path_and_na( anim_asset_fullpath )
+        anim_asset_na = anim_asset_name.split('.')[0]
+    if not os.path.isfile( os.path.join(  source_path , source_name ) ):
+        QMessageBox.information( app, u'PLease Get this file:  ' + source_path + source_name +'''\n
+                                from Perforce Depot.''' )
+    else:
+        copy_local_asset_template(  target_path, source_path, target_name , source_name )
+        if str( PROJ_SETTINGS ['KEYWORDS']['rig'] ) == str( area ):
+            change_reference(  PROJ_SETTINGS, item_area_full_path , anim_asset_na )
+        perf_task_submit( app, QMessageBox, perf, item_na, area, target_path+target_name )
+

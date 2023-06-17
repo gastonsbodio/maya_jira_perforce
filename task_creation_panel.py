@@ -206,25 +206,7 @@ class TaskCreationPanel(QMainWindow):
         for label in label_ls: #[ de.area+'_'+area  , de.asset_na+'_'+asset_na ]:
             self.jira_m.set_label( issue_key , label , self.USER , de.JI_SERVER , self.APIKEY  )
 
-    def copy_local_asset_template( self, target_path, source_path, target_name , source_name):
-        if not os.path.exists ( target_path ):
-            os.makedirs( target_path )
-        if source_path != '':
-            shutil.copy2( os.path.join( source_path , source_name  ),
-                            os.path.join( target_path , target_name ) )
-        else:
-            ev.create_empty_task( target_path + target_name  )
-            
-    def perf_task_submit(self, asset_na, area, asset_rig_full_path):
-        perf = pr.PerforceRequests()
-        perf.checkout_file( asset_rig_full_path , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
-        hlp.make_read_write( asset_rig_full_path )
-        comment = asset_na + ' ' + area +' template created'
-        dicc = perf.add_and_submit( asset_rig_full_path, comment , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE )
-        if dicc[de.key_errors] == '[]':
-            print('Submmition Done')
-        else:
-            QMessageBox.information(self, u'submittion perf error.', str( dicc[de.key_errors] )  )
+
         
         
 
@@ -330,42 +312,11 @@ class TaskCreationPanel(QMainWindow):
             template_full_path = hlp.solve_path( 'local', 'AnimRigPath_template' , localr ,  '', '' ,  projsett )
             item_area_full_path = hlp.solve_path( 'local' , 'Anim_Root' , localr ,  '', '' ,  projsett )
             self.execute_anim_sub_path( item_na , area , anim_asset )
-            
         if str( projsett ['KEYWORDS']['anim'] ) != str( area ):
-            self.copy_and_submit(   template_full_path , item_area_full_path, area , item_na  , type , anim_asset_fullpath )
+            perf = pr.PerforceRequests()
+            hlp.copy_and_submit( self, self.PROJ_SETTINGS, QMessageBox , perf ,  template_full_path ,
+                                item_area_full_path , area , item_na  , type , anim_asset_fullpath )
         
-    def copy_and_submit( self, template_full_path , item_area_full_path , area, item_na  , type , anim_asset_fullpath ):
-        if type == 'asset':
-            source_path , source_name = hlp.separate_path_and_na( template_full_path )
-            target_path , target_name = hlp.separate_path_and_na( item_area_full_path )
-        elif type == 'anim':
-            item_area_full_path = hlp.json2dicc_load(  de.TEMP_FOL+de.ANIM_PATH_TASK_CREAT  )
-            source_path , source_name = hlp.separate_path_and_na( template_full_path )
-            target_path , target_name = hlp.separate_path_and_na( item_area_full_path )
-            anim_asset_path , anim_asset_name = hlp.separate_path_and_na( anim_asset_fullpath )
-        if not os.path.isfile( os.path.join(  source_path , source_name ) ):
-            QMessageBox.information( self, u'PLease Get this file:  ' + source_path + source_name +'''\n
-                                    from Perforce Depot.''' )
-        else:
-            self.copy_local_asset_template(  target_path, source_path, target_name , source_name )
-            if str( self.PROJ_SETTINGS ['KEYWORDS']['rig'] ) == str( area ):
-                self.change_reference(  item_area_full_path , anim_asset_name )#.split('.')[0] )
-            self.perf_task_submit( item_na, area, target_path+target_name )
-    
-    def change_reference( self, full_file_path_2_replace , new_asset_name):
-        #pattern_rit_template = str( self.PROJ_SETTINGS ['Path']['RigTemplateMalePath'] )
-        generic_asset_pattern_na = str( self.PROJ_SETTINGS ['KEYWORDS']['asset_rig_template'] )
-        with open( full_file_path_2_replace , 'r') as fi:
-            fiLinesLsStrings = fi.readlines()
-            fi.close()
-        edited_file_ls = []
-        for line in fiLinesLsStrings:
-            if generic_asset_pattern_na in line :
-                line = line.replace( generic_asset_pattern_na , new_asset_name )
-            edited_file_ls.append( line )
-        with open( full_file_path_2_replace, "w") as fileFa:
-            fileFa. writelines(edited_file_ls)
-            fileFa.close()
 
     def create_template_but_action(self):
         anim_asset = str( self.ui.comboB_asset_on_anim_tag.currentText() )
