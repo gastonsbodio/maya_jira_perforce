@@ -23,7 +23,7 @@ elif sys.version_info.major == 3:
 	PY_PACKAGES = PY3_PACKAGES
 PY3CACHE_FOL = '__pycache__'
 TEMP_FOL = tempfile.gettempdir().replace("\\","/") + "/"
-JI_SERVER = "https://genvidtech.atlassian.net"
+JI_SERVER = "https://straykitestudios.atlassian.net" #"https://genvidtech.atlassian.net"  #
 JIRA_API_TOKEN_HELP = 'https://docs.searchunify.com/Content/Content-Sources/Atlassian-Jira-Confluence-Authentication-Create-API-Token.htm'
 INSTRUCTION_CHECK_ANIM_TOOL = 'https://docs.google.com/document/d/1gAxtH1fhukNAWPnWSfflYai9NQe0qsh6OVcnn7FzlKU/edit?usp=sharing'
 ANIM_CHECK_TOOL_SETTING ='anim_check_settings.json'
@@ -51,12 +51,11 @@ GOOG_CONTENT_TOOLS_FOL = "jira_manager"
 GOOGLE_SH_ASS_NA_COL = "asset_name"
 GOOGLE_SH_ANI_NA_COL = "anim_name"
 GOOGLE_SH_CREAT_AREA_COL = 'created_area'
+GOOGLE_SH_CREAT_PATH = "path"
 GOOGLE_SH_ANIM_ASSET_COL = 'character_in'
 GOOGLE_SH_ISSUE_KEY = 'jira_issue_key'
 GOOG_SH_ALPHA_LS =   ["A","B","C","D","E","F","G","H","I","J", "K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 GOOG_SH_NUM_COL =[ 1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11, 12, 13, 14, 15, 16, 17,18, 19, 20, 21, 22, 23, 24, 25, 26]
-
-
 
 
 ## asset table vars
@@ -68,9 +67,10 @@ comments = 'Comments'
 spec = 'Spec'
 title= 'Title'
 area = 'Area'
-asset_na = 'Asset_na'
-anim_na = 'Ani_na'
-anim_char = 'Char_in'
+asset_na = 'AssetName'
+anim_na = 'AniName'
+anim_char = 'CharIn'
+item_path = 'Path'
 thumbnail = 'Thumbnail'
 HEADER_LS = [ thumbnail , asset_na , area , title , spec, comments , status ]
 
@@ -105,6 +105,7 @@ ls_result = 'ls_result'
 ## jira vars
 issue_type_asset = 'Asset'
 issue_type_anim = 'Anim'
+issue_type_task = 'Task'
 dicc_ji_result = 'dicc_result'
 ls_ji_result = 'ls_result'
 key_connected = 'keyConnected'

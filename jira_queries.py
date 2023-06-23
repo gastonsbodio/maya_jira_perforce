@@ -227,13 +227,14 @@ class JiraQueries():
         file_content = hlp.write_request_jira_file ( line , True, py_fi_na + '.json')
         hlp.create_python_file ( py_fi_na, file_content)
         hlp.run_py_stand_alone( py_fi_na )
-        dicc = hlp.json2dicc_load( de.PY_PATH  + py_fi_na +'.json')[de.ls_ji_result]
+        dicc = hlp.json2dicc_load( de.PY_PATH  + py_fi_na +'.json')
         return dicc
 
     def assign_2_user (self, issue_key, assign_user_id, user ,server , apikey):
         url_line = "/rest/api/3/issue/%s/assignee" %issue_key
         payload = 'payload = json.dumps( { "accountId": "%s" } )\n' %assign_user_id
-        self.put_request_jira_templ( server , user, apikey, url_line , 'assign_user' , payload )
+        dicc = self.put_request_jira_templ( server , user, apikey, url_line , 'assign_user' , payload )
+        return dicc
         
     def get_projects(self, server, MASTER_USER, MASTER_API_KEY, pyStAl= True):
         """get projects list
@@ -283,19 +284,26 @@ class JiraQueries():
             hlp.run_py_stand_alone( 'generate_labels' )
             return hlp.json2dicc_load( de.PY_PATH  + 'set_label.json')
 
-    def create_issue( self, user, server, apikey, proj_key ,summary , description, type, assign_name ):
-        jira = self.jira_connection(user, server, apikey)
+    def create_issue( self, user, server, apikey, proj_key ,summary , description, type, assign_name , pyStAl = True ):
         issue_dict = {
             'project': {'key': proj_key},
             'summary': summary,
             'description': description,
             'issuetype': {'name': '%s' %type},
             'assignee':  {'name': assign_name },
-            'components': [{'name': 'SKS'}],
-        }
-        new_issue = jira.create_issue( fields = issue_dict )
-        return new_issue
-        
+                    }#'components': [{'name': 'SKS'}],
+        if pyStAl == False:
+            jira = self.jira_connection(user, server, apikey)
+            new_issue = jira.create_issue( fields = issue_dict )
+            return new_issue
+        else:
+            line  =         '%s = jira.create_issue( fields = %s )\n' %( de.ls_ji_result, issue_dict )
+            line  =  line + '    %s = str(%s.key.encode("utf-8") )'%( de.ls_ji_result , de.ls_ji_result )
+            file_content = hlp.write_jira_command_file ( line , True, 'create_issue.json', user, server, apikey, with_jira_q = False)
+            hlp.create_python_file ('create_issue', file_content)
+            hlp.run_py_stand_alone( 'create_issue' )
+            return hlp.json2dicc_load( de.PY_PATH  + 'create_issue.json')
+
     def issue_types_for_project( self, user, server, apikey , proj_key):
         jira = self.jira_connection( user, server, apikey )
         issues_types = jira.issue_types_for_project( proj_key ) 

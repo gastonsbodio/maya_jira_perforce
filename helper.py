@@ -19,7 +19,7 @@ sys.path.append( de.PY_PACKAGES)
 import yaml as yaml
 import shutil
 
-def make_read_write(filename):
+def make_read_writeable(filename):
     """set file as read-only false
     Args:
         filename ([str]): [description]
@@ -377,7 +377,7 @@ def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA
     file_content = file_content + '    for she in sheetLs:\n'
     file_content = file_content + '        worksheets = she.worksheets()\n'
     file_content = file_content + '        for sheet in worksheets:\n'
-    file_content = file_content + '           if "%s" in str(sheet):\n'%(sheet_num)
+    file_content = file_content + '            if "%s" in str(sheet):\n'%(sheet_num)
     file_content = file_content + '                ' +  line  + '\n'
     file_content = file_content + 'except Exception as err:\n'
     file_content = file_content + '    error_ls = ["G Sheet Error"]\n'
@@ -441,15 +441,20 @@ def copy_local_asset_template(  target_path, source_path, target_name , source_n
                         os.path.join( target_path , target_name ) )
     
     
-def change_reference( PROJ_SETTINGS, full_file_path_2_replace , new_asset_name):
-    generic_asset_pattern_na = str( PROJ_SETTINGS ['KEYWORDS']['asset_rig_template'] )
+def change_reference( PROJ_SETTINGS, full_file_path_2_replace , new_asset_file_rig_name):
+    generic_asset_fileRig_pattern_na = str( PROJ_SETTINGS ['KEYWORDS']['asset_rig_template'] )
+    generic_asset_name = str( PROJ_SETTINGS ['KEYWORDS']['asset_name_template'] )
+    new_asset_name = new_asset_file_rig_name.split(   '_'+str( PROJ_SETTINGS ['KEYWORDS']['rig'] )  )[0]
+    make_read_writeable( full_file_path_2_replace  )
     with open( full_file_path_2_replace , 'r') as fi:
         fiLinesLsStrings = fi.readlines()
         fi.close()
     edited_file_ls = []
     for line in fiLinesLsStrings:
-        if generic_asset_pattern_na in line :
-            line = line.replace( generic_asset_pattern_na , new_asset_name )
+        if generic_asset_fileRig_pattern_na in line :
+            line = line.replace( generic_asset_fileRig_pattern_na , new_asset_file_rig_name )
+        if generic_asset_name in line :
+            line = line.replace( '/'+generic_asset_name+'/' , '/'+new_asset_name+'/' )
         edited_file_ls.append( line )
     with open( full_file_path_2_replace, "w") as fileFa:
         fileFa. writelines(edited_file_ls)
@@ -458,14 +463,20 @@ def change_reference( PROJ_SETTINGS, full_file_path_2_replace , new_asset_name):
 def perf_task_submit( app, QMessageBox , perf , item_na, area, asset_rig_full_path, PERF_SERVER, PERF_USER, PERF_WORKSPACE):
     # 
     perf.checkout_file( asset_rig_full_path , PERF_SERVER, PERF_USER, PERF_WORKSPACE)
-    make_read_write( asset_rig_full_path )
+    make_read_writeable( asset_rig_full_path )
     comment = item_na + ' ' + area +' template created'
     dicc = perf.add_and_submit( asset_rig_full_path, comment , PERF_SERVER, PERF_USER, PERF_WORKSPACE )
     if dicc[de.key_errors] == '[]':
         print('Submmition Done')
     else:
         QMessageBox.information( app, u'submittion perf error.', str( dicc[de.key_errors] )  )
-        
+
+def check_template_exists(  app, QMessageBox, source_path , source_name , perf ):
+    if True:#not os.path.exists ( os.path.join( source_path , source_name ) ):
+        dicc = perf.pull_file_2_local( source_path + source_name , True , app.PERF_SERVER, app.PERF_USER, app.PERF_WORKSPACE )
+        if dicc[de.key_errors] != '[]':
+            QMessageBox.information( app, u'Downloading perforce error', str( dicc[de.key_errors] )  )
+
 def copy_and_submit( app, PROJ_SETTINGS, QMessageBox , perf ,template_full_path , item_area_full_path 
                     , area, item_na  , type , anim_asset_fullpath ):
     if type == 'asset':
@@ -476,12 +487,141 @@ def copy_and_submit( app, PROJ_SETTINGS, QMessageBox , perf ,template_full_path 
         target_path , target_name = separate_path_and_na( item_area_full_path )
         anim_asset_path , anim_asset_name = separate_path_and_na( anim_asset_fullpath )
         anim_asset_na = anim_asset_name.split('.')[0]
-    if not os.path.isfile( os.path.join(  source_path , source_name ) ):
-        QMessageBox.information( app, u'PLease Get this file:  ' + source_path + source_name +'''\n
-                                from Perforce Depot.''' )
-    else:
+    if True:#else:
+        if os.path.isfile( os.path.join(  target_path , target_name ) ):
+            make_read_writeable( target_path + target_name  )
+        check_template_exists(  app , QMessageBox , source_path , source_name , perf )
         copy_local_asset_template(  target_path, source_path, target_name , source_name )
-        if str( PROJ_SETTINGS ['KEYWORDS']['rig'] ) == str( area ):
+        if str( PROJ_SETTINGS ['KEYWORDS']['anim'] ) == str( area ):
             change_reference(  PROJ_SETTINGS, item_area_full_path , anim_asset_na )
-        perf_task_submit( app, QMessageBox, perf, item_na, area, target_path+target_name )
+        perf_task_submit( app, QMessageBox, perf, item_na, area, target_path+target_name , app.PERF_SERVER, app.PERF_USER, app.PERF_WORKSPACE )
 
+def set_new_values_on_sheet( app, gs , QMessageBox , area , column_ls , value_ls , row_idx ):
+    if area == app.PROJ_SETTINGS ['KEYWORDS']['anim']:
+        sheet_num = app.PROJECT_KEY+'_'+de.issue_type_anim
+    else:
+        sheet_num = app.PROJECT_KEY+'_'+de.issue_type_asset
+    edit_google_sheet_cell( app, QMessageBox , gs , de.GOOGLE_SHET_DATA_NA , sheet_num,
+                                                column_ls , value_ls , row_idx )
+    
+def check_forbiden_char( full_word_2_analize, QMessageBox):
+    key_permission = True
+    for char in full_word_2_analize:
+        if char in de.FORBIDDEN_CHARS:
+            key_permission = False
+            QMessageBox.information(app, u'invalid character', "Please don't use characters on this list:\n" + str(de.FORBIDDEN_CHARS) )
+            break
+    return key_permission
+        
+def check_created_task( app , QMessageBox , gs, area, item_na ):
+    if area == app.PROJ_SETTINGS ['KEYWORDS']['anim']:
+        item_na_colum  = de.GOOGLE_SH_ANI_NA_COL 
+        sheet_num = app.PROJECT_KEY+'_'+de.issue_type_anim
+    else:
+        item_na_colum  = de.GOOGLE_SH_ASS_NA_COL
+        sheet_num = app.PROJECT_KEY+'_'+de.issue_type_asset
+    item_tracked_ls_diccs = get_google_doc_data( app, QMessageBox , gs , de.GOOGLE_SHET_DATA_NA , sheet_num )
+    area_done_dicc = {} 
+    path_ls = []
+    item_created_ls = [ item[ item_na_colum ] for item in item_tracked_ls_diccs ]
+    row_idx = len( item_tracked_ls_diccs )
+    row_idx_crea_templa = len( item_tracked_ls_diccs )
+    key_permission = check_forbiden_char( item_na , QMessageBox )
+    if key_permission:
+        if item_na in item_created_ls:
+            for idx, asset in enumerate ( item_tracked_ls_diccs ):
+                if asset[ item_na_colum ] == item_na:
+                    area_done_dicc = ast.literal_eval( asset[ de.GOOGLE_SH_CREAT_AREA_COL ] )
+                    path_ls = ast.literal_eval( asset[ de.GOOGLE_SH_CREAT_PATH ] )
+                    if area in str(area_done_dicc):
+                        key_permission = False
+                        row_idx_crea_templa = idx
+                        break
+                    else:
+                        row_idx = idx
+                        row_idx_crea_templa = idx
+                        break
+    return key_permission , area_done_dicc, row_idx , path_ls, row_idx_crea_templa
+
+
+def item_path_builder( app, item_na , area , anim_asset  ):
+    projsett = app.PROJ_SETTINGS
+    localr = app.LOCAL_ROOT
+    dicc = { 'char_na' : item_na }
+    anim_asset_fullpath = ''
+    if str( projsett ['KEYWORDS']['rig'] ) == str( area ):
+        type = 'asset'
+        template_full_path = solve_path( 'local', 'RigTemplateMalePath' , localr,  '', '' ,  projsett)
+        item_area_full_path = solve_path( 'local' , 'Rig_Char_Path' , localr ,  '', '' ,  projsett, dicc_ = dicc)
+        item_depot_path = solve_path( 'depot' , 'Rig_Char_Path' , localr ,  app.DEPOT_ROOT, '' ,  projsett, dicc_ = dicc)
+    elif str( projsett ['KEYWORDS']['mod'] ) == str( area ):
+        type = 'asset'
+        template_full_path = solve_path( 'local', 'ModTemplateMalePath' , localr,  '', '' ,  projsett)
+        item_area_full_path = solve_path( 'local' , 'Mod_Char_Path' , localr ,  '', '' ,  projsett, dicc_ = dicc)
+        item_depot_path = solve_path( 'depot' , 'Mod_Char_Path' , localr ,  app.DEPOT_ROOT, '' ,  projsett, dicc_ = dicc)
+    elif str( projsett ['KEYWORDS']['anim'] ) == str( area ):
+        type = 'anim'
+        dicc = { 'anim_char' : anim_asset }
+        anim_asset_fullpath = solve_path( 'local', 'AnimRigPath' , localr ,  '', '' ,  projsett , dicc_ = dicc)
+        template_full_path = solve_path( 'local', 'AnimRigPath_template' , localr ,  '', '' ,  projsett )
+        item_area_full_path = solve_path( 'local' , 'Anim_Root' , localr ,  '', '' ,  projsett )
+        item_depot_path = solve_path( 'depot' , 'Anim_Root' , localr ,  app.DEPOT_ROOT, '' ,  projsett )
+    return type, anim_asset_fullpath, template_full_path, item_area_full_path, item_depot_path
+
+def get_area_path_from_path_ls (path_ls, area):
+    if len(path_ls) == 1 :
+        path = path_ls[0]
+    elif len(path_ls) > 1 :
+        for p in path_ls:
+            if area in p:
+                path = p
+    elif len(path_ls) == 0 :
+        path = ''
+    return path
+
+def define_main_item_vars( app, area , anim_asset, item_na , area_done_dicc  , path_ls ):
+    type, anim_asset_fullpath, template_full_path, item_area_full_path , item_depot_path = item_path_builder( app, item_na , area , ''  ) #
+    if area == app.PROJ_SETTINGS ['KEYWORDS']['anim']:
+        item_na_prefix = de.anim_na
+        item_depot_path = get_area_path_from_path_ls ( path_ls, area )
+        if item_depot_path != '':
+            label_ls = [ de.area+'_'+area  , item_na_prefix + '_' + item_na , de.item_path+'_'+item_depot_path , de.anim_char+'_'+anim_asset] 
+        else:
+            label_ls = [ de.area+'_'+area  , item_na_prefix + '_' + item_na  ,  de.anim_char+'_'+anim_asset] 
+        goo_colum = [ de.GOOGLE_SH_ANI_NA_COL , de.GOOGLE_SH_CREAT_AREA_COL , de.GOOGLE_SH_CREAT_PATH  , de.GOOGLE_SH_ANIM_ASSET_COL ]
+        value_ls =   [         item_na        ,           str(area_done_dicc)     ,          str(path_ls)        ,        anim_asset           ]
+    else:
+        if item_depot_path not in path_ls:
+            path_ls.append( item_depot_path )
+        item_na_prefix = de.asset_na
+        label_ls = [ de.area+'_'+area  , item_na_prefix + '_' + item_na  , de.item_path+'_'+item_depot_path ] 
+        goo_colum  = [ de.GOOGLE_SH_ASS_NA_COL ,  de.GOOGLE_SH_CREAT_AREA_COL ,  de.GOOGLE_SH_CREAT_PATH        ]
+        value_ls =   [         item_na         ,        str(area_done_dicc)        ,          str(path_ls)               ]
+    return label_ls , goo_colum , value_ls
+
+def set_issue_label( app, QMessageBox , label_ls, issue_key, jira_m):
+    for label in label_ls:
+        dicc = jira_m.set_label( issue_key , label , app.USER , de.JI_SERVER , app.APIKEY  )
+        if dicc[ de.key_errors ] != '[]':
+            QMessageBox.information( app, u'Jira  setting tags labels Error.', str( dicc[de.key_errors] )  )
+            return False
+    return True
+
+def jira_creation_task_issue( app ,QMessageBox ,issue_type ,assign_user_id , item_na , area , area_done_dicc , path_ls , anim_asset ):
+    description = 'Jira Manager Tool'
+    summary = area + '  task  for: '+ item_na
+    dicc = app.jira_m.create_issue( app.USER, de.JI_SERVER, app.APIKEY, app.PROJECT_KEY , summary ,
+                                        description, issue_type, app.USER )
+    if dicc[ de.key_errors ] != '[]':
+        QMessageBox.information( app, u'Jira  creating issue Error.', str( dicc[de.key_errors] )  )
+    else:
+        issue_key = dicc [ de.ls_ji_result ]
+    area_done_dicc [ area ] =  issue_key
+    dicc = app.jira_m.assign_2_user ( issue_key, assign_user_id, app.USER ,de.JI_SERVER , app.APIKEY )
+    if dicc[ de.key_errors ] != []:
+        QMessageBox.information( app, u'Jira  assigning user Error.', str( dicc[de.key_errors] )  )
+    else:
+        label_ls , goo_colum , value_ls = define_main_item_vars( app, area , anim_asset , item_na , area_done_dicc , path_ls )
+        key = set_issue_label( app,  QMessageBox ,label_ls, issue_key  , app.jira_m)
+        if key:
+            return  goo_colum , value_ls

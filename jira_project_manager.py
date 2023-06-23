@@ -425,7 +425,7 @@ class table_features( ):#QWidget ):
                     perf = pr.PerforceRequests()
                     try:
                         perf.checkout_file( thumbLocalPath+thumb_fi_na , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE)
-                        hlp.make_read_write( thumbLocalPath+thumb_fi_na )
+                        hlp.make_read_writeable( thumbLocalPath+thumb_fi_na )
                         os.remove( thumbLocalPath+thumb_fi_na )
                     except Exception as er:
                         print(er)

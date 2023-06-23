@@ -1,0 +1,20 @@
+### specific FRIS settings (path, files)
+KEYWORDS:
+    rig: Rig
+    mod: Model
+    text: Textures
+    anim: Anim
+    asset_rig_template: GenericMale_Rig_Starter
+    asset_name_template: _GenericMale
+    bindPose_patter: _Bindpose
+Paths:
+    Rig_Char_Path:        /source/Character/{char_na}/Maya/{char_na}_Rig.ma
+    Mod_Char_Path:        /source/Character/{char_na}/Maya/{char_na}_Model.ma
+    RigTemplateMalePath:  /source/Character/_GenericMale/Maya/GenericMale_Rig_Starter.ma
+    AnimRigPath:          /source/Character/{anim_char}/Maya/{anim_char}_Bindpose.ma
+    AnimRigPath_template: /source/Character/_GenericMale/Maya/GenericMale_Bindpose.ma
+    ModTemplateMalePath:  /source/Character/_GenericMale/Maya/GenericMale_Model_Starter.ma
+    Char_Thumb_Path:      /source/Character/{char_na}/{char_na}_thumbnail.jpg
+    Anim_Path:            /source/Animation/{subpath}{anim_na}_v000.ma
+    Anim_Root:            /source/Animation/
+    #Unreal_Anim_Root:     /source/Content/Sim/Characters/Generic/Art/Anim/

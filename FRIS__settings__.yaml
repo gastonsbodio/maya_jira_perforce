@@ -5,6 +5,8 @@ KEYWORDS:
     text: Textures
     anim: Anim
     asset_rig_template: GenericMale_Rig_Starter
+    asset_name_template: _GenericMale
+    bindPose_patter: _Bindpose
 Paths:
     Rig_Char_Path:       /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Rig.ma
     Mod_Char_Path:       /cypress2/ContentSource/cypress2source/Character/{char_na}/Maya/{char_na}_Model.ma

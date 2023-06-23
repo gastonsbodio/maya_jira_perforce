@@ -63,12 +63,13 @@ class GoogleSheetRequests():
         tab = '                '
         line =               'letCol = None\n'
         line =  line + tab + 'for i, col in enumerate( %s ):\n' %google_sheet_col_ls
-        line =  line + tab + '    for idx, column in enumerate( %s ):\n' %de.GOOG_SH_NUM_COL
-        line =  line + tab + '        if col == str(sheet.cell(1,column).value ):\n'
-        line =  line + tab + '            letCol = str( %s[idx] )\n' %de.GOOG_SH_ALPHA_LS
-        line =  line + tab + '            break\n'
-        line =  line + tab + '    num = %s + 2 \n' %int( rowIdx ) 
-        line =  line + tab + '    sheet.update_acell( letCol + str( num ), %s[i] )\n' %str( new_value_ls )
+        line =  line + tab + '    if col != "":\n'
+        line =  line + tab + '        for idx, column in enumerate( %s ):\n' %de.GOOG_SH_NUM_COL
+        line =  line + tab + '            if col == str(sheet.cell(1,column).value ):\n'
+        line =  line + tab + '                letCol = str( %s[idx] )\n' %de.GOOG_SH_ALPHA_LS
+        line =  line + tab + '                break\n'
+        line =  line + tab + '        num = %s + 2 \n' %int( rowIdx )
+        line =  line + tab + '        sheet.update_acell( letCol + str( num ), %s[i] )\n' %str( new_value_ls )
         file_content = hlp.write_goo_sheet_request ( line , True, 'edit_goo_sh_cell.json',
                                                     google_sheet_doc_na, google_sheet_num )
         hlp.create_python_file ( 'edit_goo_sh_cell', file_content )
