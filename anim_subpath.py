@@ -161,15 +161,20 @@ class AnimSubPath( QMainWindow ):
         elif self.signal == 'create_full_task':
             if path not in self.path_ls:
                 self.path_ls.append( path)
-            goo_colum , value_ls = hlp.jira_creation_task_issue( self, QMessageBox , de.issue_type_task  , self.assign_user_id , item_na , area ,
-                                                                self.area_done_dicc , self.path_ls , self.anim_asset )
+            goo_colum , value_ls = hlp.jira_creation_task_issue( self, QMessageBox , de.issue_type_task  , self.assign_user_id , item_na , area , self.area_done_dicc , self.path_ls , self.anim_asset )
+            print(' whattttttt     ... ')
+            print( self.row_idx )
+            print( area )
+            print( goo_colum )
+            print(value_ls)
             hlp.set_new_values_on_sheet( self , gs , QMessageBox , area, goo_colum , value_ls, self.row_idx  )
+            print(' que ondaaaaaaaaa')
         return True
         
     def done( self ):
         item_area_full_path_depot = str( self.ui.lab_final_anim_path.text() )
         item_area_full_path = str( self.ui.lab_final_anim_path.text() ).replace( self.DEPOT_ROOT ,self.LOCAL_ROOT)
-        type = 'anim'
+        type = de.issue_type_anim
         dicc = { 'char_na' : self.anim_asset }
         anim_asset_fullpath = hlp.solve_path( 'local', 'Rig_Char_Path' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS , dicc_ = dicc)
         template_full_path = hlp.solve_path( 'local', 'AnimRigPath_template' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS )

@@ -41,7 +41,7 @@ class JiraQueries():
         options = {'server': server}
         return JIRA(options, basic_auth=( user, apikey ))
 
-    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, jira , pyStAl = True ):
+    def get_custom_user_issues( self, user, server, apikey , user_type, project_key, jira , pyStAl = True  ):
         """
         Args:
             user ([str]): [ user email jira login]
@@ -53,6 +53,7 @@ class JiraQueries():
             [ls]: [list of jira issues obj]
         """
         if pyStAl == False:
+            PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + project_key + de.SETTINGS_SUFIX )
             issues_ls = jira.search_issues(jql_str="project = %s AND %s = '%s'" %( project_key, user_type, user ) )#status = 'User Acceptance'")
             issue_dicc_ls = []
             for issue in issues_ls:
@@ -66,10 +67,15 @@ class JiraQueries():
                 labels_ls = issue.fields.labels
                 if labels_ls != []:
                     main_args_issue_dicc[ de.area ] = self.dicc_label_value( labels_ls, de.area )
-                    main_args_issue_dicc[ de.asset_na ] = self.dicc_label_value( labels_ls, de.asset_na )
+                    main_args_issue_dicc[ de.area ] = self.dicc_label_value( labels_ls, de.area )
+                    if main_args_issue_dicc[ de.area ] != PROJ_SETTINGS ['KEYWORDS']['anim']:
+                        main_args_issue_dicc[ de.asset_na ] = self.dicc_label_value( labels_ls, de.asset_na )
+                    elif main_args_issue_dicc[ de.area ] == PROJ_SETTINGS ['KEYWORDS']['anim']:
+                        main_args_issue_dicc[ de.ani_na ] = self.dicc_label_value( labels_ls, de.ani_na )
                 else:
                     main_args_issue_dicc[de.area] = ''
-                    main_args_issue_dicc[de.asset_na] = ''
+                    main_args_issue_dicc[de.asset_na] = '' 
+                    main_args_issue_dicc[de.ani_na] = ''
                 assignee = issue.fields.assignee
                 if assignee != None:
                     main_args_issue_dicc[de.assignee] = assignee.displayName.encode('utf-8')
@@ -80,7 +86,8 @@ class JiraQueries():
                 issue_dicc_ls.append( main_args_issue_dicc )
             return issue_dicc_ls
         else:
-            line = '%s = {object}get_custom_user_issues( "%s", "%s", "%s" , "%s", "%s", jira ,pyStAl = False ) \n' %(de.ls_ji_result, user, server, apikey , user_type, project_key)
+            line = '%s = {object}get_custom_user_issues( "%s", "%s", "%s" , "%s", "%s", jira , pyStAl = False ) \n' %(de.ls_ji_result, 
+                                                        user, server, apikey , user_type, project_key )
             file_content = hlp.write_jira_command_file ( line , True, 'task_dicc_request.json', user, server, apikey)
             hlp.create_python_file ('get_task_dicc', file_content)
             hlp.run_py_stand_alone( 'get_task_dicc' )

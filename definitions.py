@@ -68,11 +68,12 @@ spec = 'Spec'
 title= 'Title'
 area = 'Area'
 asset_na = 'AssetName'
-anim_na = 'AniName'
+ani_na = 'AnimName'
 anim_char = 'CharIn'
 item_path = 'Path'
 thumbnail = 'Thumbnail'
-HEADER_LS = [ thumbnail , asset_na , area , title , spec, comments , status ]
+HEADER_ASS_LS = [ thumbnail , asset_na , area , title , spec, comments , status ]
+HEADER_ANI_LS = [ thumbnail , ani_na , area , title , spec, comments , status ]
 
 ### check anim tool
 anim = 'Animation'
@@ -83,7 +84,7 @@ anim_check_colum_sheet_column = 'Narrative Request Outline'
 CHECK_ANIM_LS = [ anim , maya , fbx , unreal ]
 
 THUMB_IDX = 0
-ASSET_NA_IDX = 1
+ITEM_NA_IDX = 1
 AREA_IDX = 2
 TITLE_IDX = 3
 STATUS_IDX = 6
@@ -104,7 +105,7 @@ ls_result = 'ls_result'
 
 ## jira vars
 issue_type_asset = 'Asset'
-issue_type_anim = 'Anim'
+issue_type_anim = 'Animation'
 issue_type_task = 'Task'
 dicc_ji_result = 'dicc_result'
 ls_ji_result = 'ls_result'

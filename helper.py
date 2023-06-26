@@ -479,10 +479,10 @@ def check_template_exists(  app, QMessageBox, source_path , source_name , perf )
 
 def copy_and_submit( app, PROJ_SETTINGS, QMessageBox , perf ,template_full_path , item_area_full_path 
                     , area, item_na  , type , anim_asset_fullpath ):
-    if type == 'asset':
+    if type == de.issue_type_asset:
         source_path , source_name = separate_path_and_na( template_full_path )
         target_path , target_name = separate_path_and_na( item_area_full_path )
-    elif type == 'anim':
+    elif type == de.issue_type_anim:
         source_path , source_name = separate_path_and_na( template_full_path )
         target_path , target_name = separate_path_and_na( item_area_full_path )
         anim_asset_path , anim_asset_name = separate_path_and_na( anim_asset_fullpath )
@@ -504,7 +504,7 @@ def set_new_values_on_sheet( app, gs , QMessageBox , area , column_ls , value_ls
     edit_google_sheet_cell( app, QMessageBox , gs , de.GOOGLE_SHET_DATA_NA , sheet_num,
                                                 column_ls , value_ls , row_idx )
     
-def check_forbiden_char( full_word_2_analize, QMessageBox):
+def check_forbiden_char( app, full_word_2_analize, QMessageBox):
     key_permission = True
     for char in full_word_2_analize:
         if char in de.FORBIDDEN_CHARS:
@@ -526,7 +526,7 @@ def check_created_task( app , QMessageBox , gs, area, item_na ):
     item_created_ls = [ item[ item_na_colum ] for item in item_tracked_ls_diccs ]
     row_idx = len( item_tracked_ls_diccs )
     row_idx_crea_templa = len( item_tracked_ls_diccs )
-    key_permission = check_forbiden_char( item_na , QMessageBox )
+    key_permission = check_forbiden_char( app, item_na , QMessageBox )
     if key_permission:
         if item_na in item_created_ls:
             for idx, asset in enumerate ( item_tracked_ls_diccs ):
@@ -550,17 +550,17 @@ def item_path_builder( app, item_na , area , anim_asset  ):
     dicc = { 'char_na' : item_na }
     anim_asset_fullpath = ''
     if str( projsett ['KEYWORDS']['rig'] ) == str( area ):
-        type = 'asset'
+        type = de.issue_type_asset
         template_full_path = solve_path( 'local', 'RigTemplateMalePath' , localr,  '', '' ,  projsett)
         item_area_full_path = solve_path( 'local' , 'Rig_Char_Path' , localr ,  '', '' ,  projsett, dicc_ = dicc)
         item_depot_path = solve_path( 'depot' , 'Rig_Char_Path' , localr ,  app.DEPOT_ROOT, '' ,  projsett, dicc_ = dicc)
     elif str( projsett ['KEYWORDS']['mod'] ) == str( area ):
-        type = 'asset'
+        type = de.issue_type_asset
         template_full_path = solve_path( 'local', 'ModTemplateMalePath' , localr,  '', '' ,  projsett)
         item_area_full_path = solve_path( 'local' , 'Mod_Char_Path' , localr ,  '', '' ,  projsett, dicc_ = dicc)
         item_depot_path = solve_path( 'depot' , 'Mod_Char_Path' , localr ,  app.DEPOT_ROOT, '' ,  projsett, dicc_ = dicc)
     elif str( projsett ['KEYWORDS']['anim'] ) == str( area ):
-        type = 'anim'
+        type = de.issue_type_anim
         dicc = { 'anim_char' : anim_asset }
         anim_asset_fullpath = solve_path( 'local', 'AnimRigPath' , localr ,  '', '' ,  projsett , dicc_ = dicc)
         template_full_path = solve_path( 'local', 'AnimRigPath_template' , localr ,  '', '' ,  projsett )
@@ -582,7 +582,7 @@ def get_area_path_from_path_ls (path_ls, area):
 def define_main_item_vars( app, area , anim_asset, item_na , area_done_dicc  , path_ls ):
     type, anim_asset_fullpath, template_full_path, item_area_full_path , item_depot_path = item_path_builder( app, item_na , area , ''  ) #
     if area == app.PROJ_SETTINGS ['KEYWORDS']['anim']:
-        item_na_prefix = de.anim_na
+        item_na_prefix = de.ani_na
         item_depot_path = get_area_path_from_path_ls ( path_ls, area )
         if item_depot_path != '':
             label_ls = [ de.area+'_'+area  , item_na_prefix + '_' + item_na , de.item_path+'_'+item_depot_path , de.anim_char+'_'+anim_asset] 

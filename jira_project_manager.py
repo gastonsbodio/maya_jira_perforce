@@ -86,11 +86,13 @@ class MyMainWindow(QMainWindow):
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
         self.ui.lineEd_perf_worksp.setText( self.PERF_WORKSPACE  )
         self.t_fea = table_features( self )
-        self.t_fea.populate_table( self.ui.table_assetsTasks)
+        self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls']  , de.HEADER_ASS_LS)
+        self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS )
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
+        self.t_fea.initialized_features_table(self.ui.table_animTasks)
         self.t_fea.generate_menu_dicc()
-        self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables() )
-        self.ui.actionGet_Jira_Api_Key.triggered.connect( lambda:  self.get_api_token_help() )
+        self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables( )  )
+        self.ui.actionGet_Jira_Api_Key.triggered.connect( lambda:  self.get_api_token_help( )  )
 
     def get_api_token_help(self):
         """Browse help for get jira api token
@@ -141,7 +143,7 @@ class MyMainWindow(QMainWindow):
             self.worksp_ls = []
 
     def jira_login_action(self):
-        self.jira_combo_change_ac(2)
+        self.jira_combo_change_ac( 2 )
         self.load_project_combo()
         hlp.set_logged_data_on_combo( self.ui.comboB_projects, self.PROJECT_KEY)
         QMessageBox.information(self, u'', "Jira login\n settings done"  )
@@ -166,12 +168,13 @@ class MyMainWindow(QMainWindow):
             dicc['emailAddress'] = str( self.ui.lineEd_jira_user.text() )
             self.USER = dicc['emailAddress']
             self.ui.lineEd_jira_user.setText( self.USER )
-
             dicc['apikey'] = str(self.ui.lineEd_apiKey.text())
             self.APIKEY = str( dicc['apikey'] )
             self.ui.lineEd_apiKey.setText('')
-        hlp.metadata_dicc2json( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA , dicc)
-        self.t_fea.populate_table( self.ui.table_assetsTasks)
+        hlp.metadata_dicc2json( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA , dicc )
+        #area_ls_ls = [ self.PROJ_SETTINGS['List']['area_assets_ls'] , self.PROJ_SETTINGS['List']['area_anim_ls'] ]
+        self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls'] , de.HEADER_ASS_LS)
+        self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS)
 
     def perf_combo_change_ac( self, signal ):
         """ComboB or other widget action triggered when user changes values perforce logging
@@ -211,20 +214,34 @@ class table_features( ):#QWidget ):
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.main_widg = main_widg
     
-    def get_self_tasks(self):
+    def get_self_tasks( self , area_ls ):
         """Query Jira for get own assigned issues.
         Returns:
             [ls]: [list of jira issues]
         """
         if self.PROJECT_KEY != '' and self.PROJECT_KEY != 'None':
             if self.APIKEY != 'None' and self.USER != 'None':
-                dicc = self.jira_m.get_custom_user_issues(self.USER, de.JI_SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY, self.APIKEY, 'jira' )
+                dicc = self.jira_m.get_custom_user_issues(self.USER, de.JI_SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY , 'jira'  )
                 if dicc[ de.key_errors ] != '[]':
                     QMessageBox.information(self.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
-            return dicc[de.ls_ji_result]
+            filtered_tasks_ls = []
+            for task_dicc in dicc[de.ls_ji_result]:
+                if task_dicc[ de.area ] in area_ls:
+                    filtered_tasks_ls.append( task_dicc )
+            return  filtered_tasks_ls
         else:
             return []
-    def  populate_table(self, table):
+
+    def thumb_path_item( self , task, HEADER_LS ):
+        if HEADER_LS [de.ITEM_NA_IDX ] == de.asset_na:
+            dicc = { 'char_na' : task[ de.asset_na ]}
+            item_thumb_path = hlp.solve_path( 'local', 'Char_Thumb_Path' , self.LOCAL_ROOT , 
+                                        self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS , dicc_ = dicc )
+        elif HEADER_LS [de.ITEM_NA_IDX ] == de.ani_na:
+            item_thumb_path = 'a/b'
+        return item_thumb_path
+
+    def  populate_table(self, table, area_ls, HEADER_LS ):
         """populate qtable with values.
         Args:
             table ([qtablewid]): [description]
@@ -235,11 +252,10 @@ class table_features( ):#QWidget ):
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         table.clear()
         try:
-            tasks_ls_diccs = self.get_self_tasks( )
+            tasks_ls_diccs = self.get_self_tasks(  area_ls )
         except Exception as err:
-            print (err)
             tasks_ls_diccs = []
-        for i, header in enumerate (de.HEADER_LS):
+        for i, header in enumerate ( HEADER_LS ):
             locals()["item"+ str(i)] = QTableWidgetItem(header)
             locals()["item"+ str(i)].setBackground(QColor(180, 75, 65))
             table.setHorizontalHeaderItem( i,locals()["item"+ str(i)] )
@@ -249,21 +265,20 @@ class table_features( ):#QWidget ):
         for i, task in enumerate(tasks_ls_diccs):
             table.setRowHeight(i, de.height_as_thum )
             self.id_rows[str(i)] = task['Id']
-            dicc = { 'char_na' : task[de.asset_na]}
-            char_thumb_path = hlp.solve_path( 'local', 'Char_Thumb_Path' , self.LOCAL_ROOT , 
-                                            self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS , dicc_ = dicc )
-            thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( char_thumb_path )
+            item_thumb_path = self.thumb_path_item(  task, HEADER_LS )
+            thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( item_thumb_path )
             if os.path.exists(thumbMediaPath+thumb_fi_na):
                 label_thumb = getThumbnClass( None,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
                 table.setCellWidget( i , de.THUMB_IDX, label_thumb )
-            for idx, column in enumerate (de.HEADER_LS):
+            print( task )
+            for idx, column in enumerate ( HEADER_LS ):
                 try:
                     item = QTableWidgetItem( str( task[column] ) )
                     table.setItem(i ,idx, item)
                     item.setTextAlignment(QtCore.Qt.AlignCenter)
                     if idx ==  de.TITLE_IDX:
-                        item.setToolTip(str( task[column] ))
-                except Exception as e:
+                        item.setToolTip(str( task[ column ] ))
+                except Exception as err:
                     pass
 
     def generate_menu_dicc(self):
@@ -297,12 +312,13 @@ class table_features( ):#QWidget ):
         table.customContextMenuRequested.connect( self.menues_asset_table )
         table.setEditTriggers( QTableWidget.NoEditTriggers )
 
-    def refresh_tables(self):
+    def refresh_tables( self  ):
         """Refresh given tables
         """
-        table_ls= [ self.current_table ]#, self.ui.table_animTasks ]
-        for table in table_ls:
-            self.populate_table(table)
+        area_ls_ls = [ self.PROJ_SETTINGS['List']['area_assets_ls'] , self.PROJ_SETTINGS['List']['area_anim_ls'] ]
+        HEADER_LS_ls = [ de.HEADER_ASS_LS, de.HEADER_ANI_LS]
+        for idx, table in enumerate[ self.ui.table_assetsTasks, self.ui.table_animTasks]:
+            self.populate_table( table , area_ls_ls[ idx ] , HEADER_LS_ls[idx] )
 
     def get_text_item_colum( self, table , colum_idx):
         """Return the text value for t he current row and specified column index of  table.
@@ -377,7 +393,7 @@ class table_features( ):#QWidget ):
             table ([qtable]): [qtable widget]
             position ([qposition]): [don t need to be instanced]
         """
-        asset_na = self.get_text_item_colum( table, de.ASSET_NA_IDX)
+        asset_na = self.get_text_item_colum( table, de.ITEM_NA_IDX)
         dicc = {'char_na':asset_na}
         thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'local', 'Char_Thumb_Path', self.LOCAL_ROOT, 
                                                                                 self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS ), dicc_ = dicc )
