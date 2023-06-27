@@ -7,6 +7,7 @@ KEYWORDS:
     asset_rig_template: genericMale_Rig_Starter
     asset_name_template: genericMale
     bindPose_pattern: _Bindpose
+    item_thumbn_sufix: '_thumbnail.jpg'
 Paths:
     Rig_Char_Path:        /ContentSource/Character/{char_na}/Maya/{char_na}_Rig.ma
     Mod_Char_Path:        /ContentSource/Character/{char_na}/Maya/{char_na}_Model.ma

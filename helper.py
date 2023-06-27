@@ -159,16 +159,20 @@ def solve_path( root_state, key_path, local_root,
     Returns:
         [str]: [dep path or local path depending is_local value]
     """
-    if proj_settings['Paths'][ key_path ].format( **dicc_) != '': 
-        if root_state == 'local':
-            return local_root + proj_settings['Paths'][key_path].format(**dicc_)
-        elif root_state == 'depot':
-            return depot_root + proj_settings['Paths'][key_path].format(**dicc_)
-        elif root_state == 'git':
-            return git_root + proj_settings['Paths'][key_path].format(**dicc_)
-    else:
-        return ''
-
+    if True:#try:
+        if proj_settings['Paths'][ key_path ].format( **dicc_) != '': 
+            if root_state == 'local':
+                return local_root + proj_settings['Paths'][key_path].format(**dicc_)
+            elif root_state == 'depot':
+                return depot_root + proj_settings['Paths'][key_path].format(**dicc_)
+            elif root_state == 'git':
+                return git_root + proj_settings['Paths'][key_path].format(**dicc_)
+        else:
+            return ''
+    #except Exception as err:
+    #    print (err)
+    #    return ''
+    
 def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
     path, name = separate_path_and_na( file_path )
     file = name.split('.')[0]
@@ -440,7 +444,6 @@ def copy_local_asset_template(  target_path, source_path, target_name , source_n
     shutil.copy2( os.path.join( source_path , source_name  ),
                         os.path.join( target_path , target_name ) )
     
-    
 def change_reference( PROJ_SETTINGS, full_file_path_2_replace , new_asset_file_rig_name):
     generic_asset_fileRig_pattern_na = str( PROJ_SETTINGS ['KEYWORDS']['asset_rig_template'] )
     generic_asset_name = str( PROJ_SETTINGS ['KEYWORDS']['asset_name_template'] )
@@ -542,7 +545,6 @@ def check_created_task( app , QMessageBox , gs, area, item_na ):
                         row_idx_crea_templa = idx
                         break
     return key_permission , area_done_dicc, row_idx , path_ls, row_idx_crea_templa
-
 
 def item_path_builder( app, item_na , area , anim_asset  ):
     projsett = app.PROJ_SETTINGS

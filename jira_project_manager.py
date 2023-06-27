@@ -85,12 +85,11 @@ class MyMainWindow(QMainWindow):
         self.ui.pushBut_login_perf.clicked.connect(lambda: self.perf_combo_change_ac(1))
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
         self.ui.lineEd_perf_worksp.setText( self.PERF_WORKSPACE  )
-        self.t_fea = table_features( self )
+        self.t_fea = table_features( self.ui.table_assetsTasks , self.ui.table_animTasks , main_widg = self )
         self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls']  , de.HEADER_ASS_LS)
         self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS )
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_animTasks)
-        self.t_fea.generate_menu_dicc()
         self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables( )  )
         self.ui.actionGet_Jira_Api_Key.triggered.connect( lambda:  self.get_api_token_help( )  )
 
@@ -206,13 +205,17 @@ class MyMainWindow(QMainWindow):
 class table_features( ):#QWidget ):
     """All Table functionality
     """
-    def __init__(self, main_widg = None):
+    def __init__( self ,  table_assetsTasks , table_animTasks ,  main_widg = None ):
         self.jira_m = jq.JiraQueries()
         self.USER , self.APIKEY, self.PROJECT_KEY  = hlp.load_jira_vars()
         self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         self.main_widg = main_widg
+        self.table_assetsTasks = table_assetsTasks
+        self.table_animTasks = table_animTasks
+        self.dicc_menu_ani_func = self.generate_menu_dicc( de.ani_na )
+        self.dicc_menu_ass_func = self.generate_menu_dicc( de.asset_na )
     
     def get_self_tasks( self , area_ls ):
         """Query Jira for get own assigned issues.
@@ -232,13 +235,16 @@ class table_features( ):#QWidget ):
         else:
             return []
 
-    def thumb_path_item( self , task, HEADER_LS ):
+    def thumb_local_path_item( self , task, HEADER_LS ):
         if HEADER_LS [de.ITEM_NA_IDX ] == de.asset_na:
             dicc = { 'char_na' : task[ de.asset_na ]}
             item_thumb_path = hlp.solve_path( 'local', 'Char_Thumb_Path' , self.LOCAL_ROOT , 
                                         self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS , dicc_ = dicc )
         elif HEADER_LS [de.ITEM_NA_IDX ] == de.ani_na:
-            item_thumb_path = 'a/b'
+            local_full_path, depot_full_path = self.get_anim_path(  task[ de.ani_na ], self.tasks_ls_ani_diccs )
+            item_path , item_file = hlp.separate_path_and_na( local_full_path )
+            thumb_sufix = self.PROJ_SETTINGS['KEYWORDS']['item_thumbn_sufix']
+            item_thumb_path = item_path + task[ de.ani_na ] + thumb_sufix
         return item_thumb_path
 
     def  populate_table(self, table, area_ls, HEADER_LS ):
@@ -253,6 +259,8 @@ class table_features( ):#QWidget ):
         table.clear()
         try:
             tasks_ls_diccs = self.get_self_tasks(  area_ls )
+            if self.PROJ_SETTINGS['KEYWORDS']['anim'] in area_ls:
+                self.tasks_ls_ani_diccs = tasks_ls_diccs
         except Exception as err:
             tasks_ls_diccs = []
         for i, header in enumerate ( HEADER_LS ):
@@ -265,12 +273,11 @@ class table_features( ):#QWidget ):
         for i, task in enumerate(tasks_ls_diccs):
             table.setRowHeight(i, de.height_as_thum )
             self.id_rows[str(i)] = task['Id']
-            item_thumb_path = self.thumb_path_item(  task, HEADER_LS )
+            item_thumb_path = self.thumb_local_path_item(  task, HEADER_LS )
             thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( item_thumb_path )
             if os.path.exists(thumbMediaPath+thumb_fi_na):
                 label_thumb = getThumbnClass( None,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
                 table.setCellWidget( i , de.THUMB_IDX, label_thumb )
-            print( task )
             for idx, column in enumerate ( HEADER_LS ):
                 try:
                     item = QTableWidgetItem( str( task[column] ) )
@@ -281,43 +288,65 @@ class table_features( ):#QWidget ):
                 except Exception as err:
                     pass
 
-    def generate_menu_dicc(self):
+    def generate_menu_dicc( self, signal ):
         """Generate a Dictionary Specifying with menu will be triggered depending column selection.
         """
-        self.dicc_menu_func = {}
-        for header in de.HEADER_LS:
+        if signal == de.asset_na:
+            HEADER_LS = de.HEADER_ASS_LS
+        elif signal == de.ani_na:
+            HEADER_LS = de.HEADER_ANI_LS
+        dicc_menu_func = {}
+        for header in HEADER_LS:
             if header == de.status:
-                self.dicc_menu_func [header+'_menu_func'] = self.status_menu_func
+                dicc_menu_func [header+'_menu_func'] = self.status_menu_func
             elif header == de.thumbnail:
-                self.dicc_menu_func [header+'_menu_func'] = self.thumb_menu_func
+                dicc_menu_func [header+'_menu_func'] = self.thumb_menu_func
             elif header == de.spec:
-                self.dicc_menu_func [header+'_menu_func'] = self.issueLink_menu_func
+                dicc_menu_func [header+'_menu_func'] = self.issueLink_menu_func
             elif header == de.asset_na:
-                self.dicc_menu_func [de.asset_na+'_menu_func'] = self.asset_na_menu_func
+                dicc_menu_func [de.asset_na+'_menu_func'] = self.AssetName_na_menu_func
+            elif header == de.ani_na:
+                dicc_menu_func [de.ani_na+'_menu_func'] = self.AnimName_na_menu_func
+        return dicc_menu_func
 
-    def menues_asset_table(self, position):
+    def menues_asset_table( self, position ):
         """keep initialize the proper menu function on each column.
         Args:
             position ([qposition]): [not need to set this arg]
         """
-        for header in de.HEADER_LS:
-            if self.current_table.horizontalHeaderItem( self.current_table.currentColumn()).text() == header:
-                self.dicc_menu_func [ header + '_menu_func']( self.current_table, position )
+        self.menu_initiates(  de.HEADER_ASS_LS, self.table_assetsTasks, self.dicc_menu_ass_func, position )
 
+
+    def menues_anim_table( self, position ):
+        """keep initialize the proper menu function on each column.
+        Args:
+            position ([qposition]): [not need to set this arg]
+        """
+        self.menu_initiates(  de.HEADER_ANI_LS, self.table_animTasks, self.dicc_menu_ani_func, position )
+
+    def menu_initiates( self, HEADER_LS, table, dicc_menu_func, position):
+        for header in HEADER_LS:
+            if table.horizontalHeaderItem( table.currentColumn()).text() == header:
+                dicc_menu_func[ header + '_menu_func']( table, position )
+                
     def initialized_features_table(self, table):
         """initialize table menues and actions.
-        """
-        self.current_table = table
-        table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        table.customContextMenuRequested.connect( self.menues_asset_table )
-        table.setEditTriggers( QTableWidget.NoEditTriggers )
+        """ 
+        if 'asset' in table.objectName( ):
+            table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            table.customContextMenuRequested.connect( self.menues_asset_table )
+            table.setEditTriggers( QTableWidget.NoEditTriggers )
+        elif 'anim' in table.objectName( ):
+            table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            table.customContextMenuRequested.connect( self.menues_anim_table )
+            table.setEditTriggers( QTableWidget.NoEditTriggers )
 
     def refresh_tables( self  ):
         """Refresh given tables
         """
         area_ls_ls = [ self.PROJ_SETTINGS['List']['area_assets_ls'] , self.PROJ_SETTINGS['List']['area_anim_ls'] ]
         HEADER_LS_ls = [ de.HEADER_ASS_LS, de.HEADER_ANI_LS]
-        for idx, table in enumerate[ self.ui.table_assetsTasks, self.ui.table_animTasks]:
+        for idx, table in enumerate([ self.table_assetsTasks, self.table_animTasks ]):
             self.populate_table( table , area_ls_ls[ idx ] , HEADER_LS_ls[idx] )
 
     def get_text_item_colum( self, table , colum_idx):
@@ -332,37 +361,43 @@ class table_features( ):#QWidget ):
         item_text = table.item( item_text, colum_idx )
         return str(item_text.text())
 
-    def asset_na_menu_func(self, table, position ):
+    def AssetName_na_menu_func( self , table , position):
+        self.item_na_menu_func( table, position , de.asset_na)
+
+    def AnimName_na_menu_func( self , table , position):
+        self.item_na_menu_func( table, position , de.ani_na)
+
+    def item_na_menu_func(self, table, position , type):
         """Floatting menu on asset name column.
         Args:
             table ([qtablewidget obj]): []
             position ([qposition]): [not need to set this arg]
         """
-        menu_asset_na = QMenu()
-        asset_na = str( table.currentItem().text() )
+        menu_item_na = QMenu()
+        item_na = str( table.currentItem().text() )
         area = self.get_text_item_colum(table, de.AREA_IDX)
-        exploreAction = menu_asset_na.addAction(de.open_fi_fol)
-        getFiAction = menu_asset_na.addAction( de.dowload_fi_perf )
-        actionMenu = menu_asset_na.exec_(table.mapToGlobal(position))
+        exploreAction = menu_item_na.addAction(de.open_fi_fol)
+        getFiAction = menu_item_na.addAction( de.dowload_fi_perf )
+        actionMenu = menu_item_na.exec_(table.mapToGlobal(position))
         if actionMenu != None:
             if str(actionMenu.text()) == de.open_fi_fol:
-                self.explore_char_fol(asset_na, area)
+                self.explore_char_fol( item_na, area, type)
             elif str(actionMenu.text()) == de.dowload_fi_perf:
-                self.get_task_file( asset_na, area)
+                self.get_task_file( item_na, area, type )
 
-    def get_task_file(self, asset_na, area):
+    def get_task_file(self, asset_na, area, type ):
         """dowload given asset data file to local
         Args:
             asset_na ([str]): [asset name]
             area ([str]): [could be Rig|Mod|Surf]
         """
-        local_full_path, depot_full_path = self.get_asset_path( asset_na, area)
+        local_full_path, depot_full_path = self.get_asset_path( asset_na, area, type )
         perf = pr.PerforceRequests()
         dicc = perf.pull_file_2_local( depot_full_path, True , self.PERF_SERVER, self.PERF_USER, self.PERF_WORKSPACE )
         if dicc[de.key_errors] != '[]':
             QMessageBox.information(self.main_widg, u'Downloading task error', str( dicc[de.key_errors] )  )
             
-    def get_asset_path(self, asset_na, area):
+    def get_asset_path(self, item_na, area, type):
         """return depot and local asset path
         Args:
             asset_na ([str]): [asset name]
@@ -370,20 +405,32 @@ class table_features( ):#QWidget ):
         Returns:
             [tuple]: [return to arg as touple format: local full path and perforce repo full path]
         """
-        dicc = { 'char_na': asset_na }
-        local_full_path = hlp.solve_path( 'local' , area+'_Char_Path', self.LOCAL_ROOT,
-                                            self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS, dicc_ = dicc )
-        depot_full_path = hlp.solve_path( 'depot', area+'_Char_Path', self.LOCAL_ROOT,
-                                            self.DEPOT_ROOT, '' , self.PROJ_SETTINGS , dicc_ = dicc)
+        if type == de.asset_na:
+            dicc = { 'char_na': item_na }
+            local_full_path = hlp.solve_path( 'local' , area+'_Char_Path', self.LOCAL_ROOT,
+                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS, dicc_ = dicc )
+            depot_full_path = hlp.solve_path( 'depot', area+'_Char_Path', self.LOCAL_ROOT,
+                                                self.DEPOT_ROOT, '' , self.PROJ_SETTINGS , dicc_ = dicc)
+        if type == de.ani_na:
+            local_full_path, depot_full_path = self.get_anim_path( item_na, self.tasks_ls_ani_diccs )
         return local_full_path, depot_full_path
 
-    def explore_char_fol(self, asset_na, area):
+    def get_anim_path( self, item_na, tasks_ls_ani_diccs ):
+        for task in tasks_ls_ani_diccs:
+            if item_na == task[ de.ani_na ]:
+                depot_full_path = task[ de.item_path ]
+                local_full_path = depot_full_path.replace( self.DEPOT_ROOT, self.LOCAL_ROOT )
+                break
+        return local_full_path, depot_full_path
+
+
+    def explore_char_fol(self, asset_na, area, type):
         """this function will open the file containing folder
         Args:
             asset_na ([str]): [asset name]
             area ([str]): [asset area]
         """
-        local_full_path, depot_full_path = self.get_asset_path( asset_na, area)
+        local_full_path, depot_full_path = self.get_asset_path( asset_na, area, type )
         path_, fi_na = hlp.separate_path_and_na(local_full_path)
         os.startfile(path_)
     
@@ -393,12 +440,15 @@ class table_features( ):#QWidget ):
             table ([qtable]): [qtable widget]
             position ([qposition]): [don t need to be instanced]
         """
-        asset_na = self.get_text_item_colum( table, de.ITEM_NA_IDX)
-        dicc = {'char_na':asset_na}
-        thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'local', 'Char_Thumb_Path', self.LOCAL_ROOT, 
-                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS ), dicc_ = dicc )
-        thumbDepotPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'depot', 'Char_Thumb_Path' , self.LOCAL_ROOT, 
-                                                                                self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS) , dicc_ = dicc )
+        item_na = self.get_text_item_colum( table, de.ITEM_NA_IDX)
+        if 'asset' in table.objectName():
+            dicc = {'char_na':item_na}
+            thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'local', 'Char_Thumb_Path', self.LOCAL_ROOT, self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS , dicc_ = dicc ))
+            thumbDepotPath, thumb_fi_na = hlp.separate_path_and_na(    hlp.solve_path( 'depot', 'Char_Thumb_Path' , self.LOCAL_ROOT, self.DEPOT_ROOT, ''  , self.PROJ_SETTINGS, dicc_ = dicc ))
+        elif 'anim' in table.objectName():
+            item_thumb_path = self.thumb_local_path_item(  { de.ani_na : item_na } , de.HEADER_ANI_LS )
+            thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na( item_thumb_path )
+            thumbDepotPath = thumbLocalPath.replace( self.LOCAL_ROOT , self.DEPOT_ROOT )
         menu_thumb = QMenu()
         doThumbnailAc1 = menu_thumb.addAction( de.do_thumb, lambda: self.do_row_thumb( thumbLocalPath, thumb_fi_na, table , de.THUMB_IDX ) )
         doThumbnailAc2 = menu_thumb.addAction( de.get_thumb , lambda: self.get_thumb_from_depot( thumbDepotPath , thumb_fi_na , table , de.THUMB_IDX) )
