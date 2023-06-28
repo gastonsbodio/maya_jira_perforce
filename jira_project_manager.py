@@ -419,7 +419,7 @@ class table_features( ):#QWidget ):
         for task in tasks_ls_ani_diccs:
             if item_na == task[ de.ani_na ]:
                 depot_full_path = task[ de.item_path ]
-                local_full_path = depot_full_path.replace( self.DEPOT_ROOT, self.LOCAL_ROOT )
+                local_full_path = hlp.transform_given_path( depot_full_path, 'local' , self.PROJ_SETTINGS , self.LOCAL_ROOT, self.DEPOT_ROOT )
                 break
         return local_full_path, depot_full_path
 
@@ -448,7 +448,7 @@ class table_features( ):#QWidget ):
         elif 'anim' in table.objectName():
             item_thumb_path = self.thumb_local_path_item(  { de.ani_na : item_na } , de.HEADER_ANI_LS )
             thumbLocalPath, thumb_fi_na = hlp.separate_path_and_na( item_thumb_path )
-            thumbDepotPath = thumbLocalPath.replace( self.LOCAL_ROOT , self.DEPOT_ROOT )
+            thumbDepotPath = hlp.transform_given_path( thumbLocalPath, 'depot' , self.PROJ_SETTINGS , self.LOCAL_ROOT, self.DEPOT_ROOT )
         menu_thumb = QMenu()
         doThumbnailAc1 = menu_thumb.addAction( de.do_thumb, lambda: self.do_row_thumb( thumbLocalPath, thumb_fi_na, table , de.THUMB_IDX ) )
         doThumbnailAc2 = menu_thumb.addAction( de.get_thumb , lambda: self.get_thumb_from_depot( thumbDepotPath , thumb_fi_na , table , de.THUMB_IDX) )
@@ -462,7 +462,7 @@ class table_features( ):#QWidget ):
             table ([qtalbe]): [qtable widget]
             colum_idx ([int]): [integer related to the column index]
         """
-        local_path = thumbDepotPath.replace( self.DEPOT_ROOT, self.LOCAL_ROOT )
+        local_path = hlp.transform_given_path( thumbDepotPath, 'local' , self.PROJ_SETTINGS, self.LOCAL_ROOT, self.DEPOT_ROOT)
         try:
             os.remove( local_path+thumb_fi_na )
         except Exception:

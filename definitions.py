@@ -25,6 +25,7 @@ PY3CACHE_FOL = '__pycache__'
 TEMP_FOL = tempfile.gettempdir().replace("\\","/") + "/"
 JI_SERVER = "https://straykitestudios.atlassian.net" #"https://genvidtech.atlassian.net"  #
 JIRA_API_TOKEN_HELP = 'https://docs.searchunify.com/Content/Content-Sources/Atlassian-Jira-Confluence-Authentication-Create-API-Token.htm'
+TRACK_SHEET_ITEMS = 'https://docs.google.com/spreadsheets/d/1sy7NgFtjADYhvmU45rqlgfl4qznpW2adECWv892Ua-Q/edit?usp=sharing'
 INSTRUCTION_CHECK_ANIM_TOOL = 'https://docs.google.com/document/d/1gAxtH1fhukNAWPnWSfflYai9NQe0qsh6OVcnn7FzlKU/edit?usp=sharing'
 ANIM_CHECK_TOOL_SETTING ='anim_check_settings.json'
 ANIM_PATH_TASK_CREAT = 'anim_path_creation_tool.json'

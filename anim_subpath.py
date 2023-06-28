@@ -67,9 +67,9 @@ class AnimSubPath( QMainWindow ):
         self.PERF_USER ,self.PERF_SERVER , self.PERF_WORKSPACE = hlp.load_perf_vars()
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
-        anim_root = hlp.solve_path( 'depot' , 'Anim_Root' , '' ,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS )
-        self.ui.lineEdit_anim_root.setText( anim_root )
-        self.    load_qwlist(  self.ui.listWid_lavel1, 0 )
+        self.anim_root = hlp.solve_path( 'depot' , 'Anim_Root' , '' ,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS )
+        self.ui.lineEdit_anim_root.setText( self.anim_root )
+        self.load_qwlist(  self.ui.listWid_lavel1, 0 )
         self.ui.listWid_lavel1.currentItemChanged.connect( lambda: self.    load_qwlist( self.ui.listWid_lavel2 , 1 ))
         self.ui.listWid_lavel2.currentItemChanged.connect( lambda: self.    load_qwlist( self.ui.listWid_lavel3 , 2 ))
         self.ui.listWid_lavel3.currentItemChanged.connect( lambda: self.    load_qwlist( self.ui.listWid_lavel4 , 3 ))
@@ -77,11 +77,10 @@ class AnimSubPath( QMainWindow ):
         self.ui.pushBut_create_new_folder.clicked.connect( lambda: self.pushBut_create_new_folder_action() )
         self.ui.pushBut_set_this_path.clicked.connect( lambda: self.done())
         
-    def     load_qwlist(self, target_list_widget , signal):
-        path_root = hlp.solve_path( 'depot' , 'Anim_Root' , '' ,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS )
+    def load_qwlist(self, target_list_widget , signal):
         subpaths = self.generate_subpaths( signal )
         perf = pr.PerforceRequests()
-        dicc = perf.get_fol_fi_on_folder( 'dirs' ,path_root + subpaths, True, self.PERF_SERVER , self.PERF_USER , self.PERF_WORKSPACE )
+        dicc = perf.get_fol_fi_on_folder( 'dirs' , self.anim_root+subpaths , True, self.PERF_SERVER , self.PERF_USER , self.PERF_WORKSPACE )
         if dicc[de.key_errors] == '[]':
             folder_ls = dicc[de.ls_result]
             for item in folder_ls:
@@ -128,7 +127,6 @@ class AnimSubPath( QMainWindow ):
         anim_full_path_fileroot = hlp.solve_path( 'depot' , 'Anim_Path' , '' ,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS , dicc_ = dicc)
         self.ui.lab_final_anim_path.setText( anim_full_path_fileroot )
         self.ui.lab_final_anim_path.setStyleSheet("color: rgb( 0, 175 ,0 )")
-        self.final_local_anim_full_path = hlp.solve_path( 'local' , 'Anim_Path' , self.LOCAL_ROOT ,  self.DEPOT_ROOT, '' ,  self.PROJ_SETTINGS , dicc_ = dicc)
 
     def pushBut_create_new_folder_action(self):
         text_folder = str( self.ui.lineEd_new_fol.text() )
@@ -162,18 +160,13 @@ class AnimSubPath( QMainWindow ):
             if path not in self.path_ls:
                 self.path_ls.append( path)
             goo_colum , value_ls = hlp.jira_creation_task_issue( self, QMessageBox , de.issue_type_task  , self.assign_user_id , item_na , area , self.area_done_dicc , self.path_ls , self.anim_asset )
-            print(' whattttttt     ... ')
-            print( self.row_idx )
-            print( area )
-            print( goo_colum )
-            print(value_ls)
             hlp.set_new_values_on_sheet( self , gs , QMessageBox , area, goo_colum , value_ls, self.row_idx  )
-            print(' que ondaaaaaaaaa')
         return True
         
     def done( self ):
         item_area_full_path_depot = str( self.ui.lab_final_anim_path.text() )
-        item_area_full_path = str( self.ui.lab_final_anim_path.text() ).replace( self.DEPOT_ROOT ,self.LOCAL_ROOT)
+        item_area_full_path = str( self.ui.lab_final_anim_path.text() )
+        item_area_full_path = hlp.transform_given_path( item_area_full_path, 'local' , self.PROJ_SETTINGS , self.LOCAL_ROOT, self.DEPOT_ROOT )
         type = de.issue_type_anim
         dicc = { 'char_na' : self.anim_asset }
         anim_asset_fullpath = hlp.solve_path( 'local', 'Rig_Char_Path' , self.LOCAL_ROOT ,  '', '' ,  self.PROJ_SETTINGS , dicc_ = dicc)

@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_creation">
      <attribute name="title">
@@ -410,9 +410,9 @@
    </property>
    <widget class="QMenu" name="menuUpdates">
     <property name="title">
-     <string>Updates</string>
+     <string>Track Sheet</string>
     </property>
-    <addaction name="actionupdate_all_templates"/>
+    <addaction name="actionTrack_Sheet_View"/>
    </widget>
    <addaction name="menuUpdates"/>
   </widget>
@@ -420,6 +420,11 @@
   <action name="actionupdate_all_templates">
    <property name="text">
     <string>update all templates</string>
+   </property>
+  </action>
+  <action name="actionTrack_Sheet_View">
+   <property name="text">
+    <string>Open Track Sheet</string>
    </property>
   </action>
  </widget>

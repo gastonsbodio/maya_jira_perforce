@@ -149,6 +149,29 @@ def format_path(path):
         path = path + '/'
     return path
 
+def fix_perf_mapped_root_path( path, proj_settings ):
+    real_dp_fol_root = proj_settings['KEYWORDS']['real_depot_fol_root']
+    mapped_dp_fol_root = proj_settings['KEYWORDS']['maped_depot_fol_root']
+    local_fol_root = proj_settings['KEYWORDS']['local_fol_root']
+    path_ = path.replace(    real_dp_fol_root+'/'+local_fol_root     ,   mapped_dp_fol_root    )
+    return path_
+
+def go_2_perf_root_path( path, proj_settings , depot_root ):
+    real_dp_fol_root = proj_settings['KEYWORDS']['real_depot_fol_root']
+    mapped_dp_fol_root = proj_settings['KEYWORDS']['maped_depot_fol_root']
+    local_fol_root = proj_settings['KEYWORDS']['local_fol_root']
+    path_ = path.replace(    '/'+local_fol_root+'/'  ,    '/'+mapped_dp_fol_root+'/'   )
+    new_root = depot_root.split( '/'+real_dp_fol_root )[0]
+    path_ = new_root+'/'+mapped_dp_fol_root+'/'+ path_.split( '/'+mapped_dp_fol_root+'/' )[-1]
+    return path_
+
+def go_2_local_root_path( path, proj_settings , local_root ):
+    mapped_dp_fol_root = proj_settings['KEYWORDS']['maped_depot_fol_root']
+    local_fol_root = proj_settings['KEYWORDS']['local_fol_root']
+    path_ = path.replace(    '/'+mapped_dp_fol_root+'/'     ,   '/'+local_fol_root+'/'    )
+    path_ = local_root+'/'+local_fol_root+'/'+ path_.split( '/'+local_fol_root+'/' )[-1]
+    return path_
+
 def solve_path( root_state, key_path, local_root,
                 depot_root, git_root, proj_settings , dicc_ = {}):
     """Retrun local desire path or depot path depending is_local value.
@@ -159,20 +182,25 @@ def solve_path( root_state, key_path, local_root,
     Returns:
         [str]: [dep path or local path depending is_local value]
     """
-    if True:#try:
-        if proj_settings['Paths'][ key_path ].format( **dicc_) != '': 
-            if root_state == 'local':
-                return local_root + proj_settings['Paths'][key_path].format(**dicc_)
-            elif root_state == 'depot':
-                return depot_root + proj_settings['Paths'][key_path].format(**dicc_)
-            elif root_state == 'git':
-                return git_root + proj_settings['Paths'][key_path].format(**dicc_)
-        else:
-            return ''
-    #except Exception as err:
-    #    print (err)
-    #    return ''
+    if proj_settings['Paths'][ key_path ].format( **dicc_) != '': 
+        if root_state == 'local':
+            return local_root + proj_settings['Paths'][key_path].format(**dicc_)
+        elif root_state == 'depot':
+            depot_path = depot_root + proj_settings['Paths'][key_path].format(**dicc_)
+            depot_path = fix_perf_mapped_root_path( depot_path , proj_settings )
+            return depot_path
+        elif root_state == 'git':
+            return git_root + proj_settings['Paths'][key_path].format(**dicc_)
+    else:
+        return ''
     
+def transform_given_path( path, way_key , proj_settings , local_root , depot_root ):
+    if way_key == 'local':
+        path = go_2_local_root_path( path, proj_settings ,local_root )
+    elif way_key == 'depot':
+        path = go_2_perf_root_path( path, proj_settings ,depot_root )
+    return path
+
 def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
     path, name = separate_path_and_na( file_path )
     file = name.split('.')[0]
@@ -532,10 +560,11 @@ def check_created_task( app , QMessageBox , gs, area, item_na ):
     key_permission = check_forbiden_char( app, item_na , QMessageBox )
     if key_permission:
         if item_na in item_created_ls:
-            for idx, asset in enumerate ( item_tracked_ls_diccs ):
-                if asset[ item_na_colum ] == item_na:
-                    area_done_dicc = ast.literal_eval( asset[ de.GOOGLE_SH_CREAT_AREA_COL ] )
-                    path_ls = ast.literal_eval( asset[ de.GOOGLE_SH_CREAT_PATH ] )
+            for idx, item in enumerate ( item_tracked_ls_diccs ):
+                if item[ item_na_colum ] == item_na:
+                    area_done_dicc = ast.literal_eval( item[ de.GOOGLE_SH_CREAT_AREA_COL ] )
+                    if item[ de.GOOGLE_SH_CREAT_PATH ] != u'':
+                        path_ls = ast.literal_eval( item[ de.GOOGLE_SH_CREAT_PATH ] )
                     if area in str(area_done_dicc):
                         key_permission = False
                         row_idx_crea_templa = idx

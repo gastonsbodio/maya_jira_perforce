@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import ast
+import webbrowser
 try:
     from PySide  import QtCore
     from PySide.QtGui import *
@@ -76,6 +77,13 @@ class TaskCreationPanel(QMainWindow):
         self.ui.pushBut_create_file_template.clicked.connect( lambda: self.create_template_but_action() )
         self.ui.comboB_item_area.currentIndexChanged.connect(lambda: self.issue_type_combo_change_action() )
         self.ui.comboB_item_area_tag.currentIndexChanged.connect(lambda: self.item_area_tag_combo_change_action() )
+        self.ui.actionTrack_Sheet_View.triggered.connect( lambda:  self.get_track_sheet( )  )
+
+    def get_track_sheet(self):
+        """Browse help for get jira api token
+        """
+        link = de.TRACK_SHEET_ITEMS
+        webbrowser.open(link, new=2) 
 
     def item_area_tag_combo_change_action(self):
         selection = str(self.ui.comboB_item_area_tag.currentText())

@@ -8,6 +8,9 @@ KEYWORDS:
     asset_name_template: genericMale
     bindPose_pattern: _Bindpose
     item_thumbn_sufix: '_thumbnail.jpg'
+    real_depot_fol_root: core-content-art-source
+    maped_depot_fol_root: source
+    local_fol_root: ContentSource
 Paths:
     Rig_Char_Path:        /ContentSource/Character/{char_na}/Maya/{char_na}_Rig.ma
     Mod_Char_Path:        /ContentSource/Character/{char_na}/Maya/{char_na}_Model.ma
