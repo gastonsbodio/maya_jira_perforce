@@ -41,6 +41,7 @@ import definitions as de
 import helper as hlp
 import perforce_requests as pr
 import enviroment as ev
+import comments_app as comm
 try:
     reload(gs)
     reload(jq)
@@ -48,6 +49,7 @@ try:
     reload(hlp)
     reload(pr)
     reload(ev)
+    reload(comm)
 except Exception as err:
     print (err)
     importlib.reload(gs)
@@ -56,6 +58,7 @@ except Exception as err:
     importlib.reload(hlp)
     importlib.reload(pr) 
     importlib.reload(ev) 
+    importlib.reload(comm) 
 
 class MyMainWindow(QMainWindow):
     def __init__(self):
@@ -86,12 +89,26 @@ class MyMainWindow(QMainWindow):
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
         self.ui.lineEd_perf_worksp.setText( self.PERF_WORKSPACE  )
         self.t_fea = table_features( self.ui.table_assetsTasks , self.ui.table_animTasks , main_widg = self )
-        self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls']  , de.HEADER_ASS_LS)
-        self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS )
+        self.id_rows_ass = self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls']  , de.HEADER_ASS_LS)
+        self.id_rows_ani = self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS )
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_animTasks)
         self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables( )  )
         self.ui.actionGet_Jira_Api_Key.triggered.connect( lambda:  self.get_api_token_help( )  )
+        self.ui.table_animTasks.itemClicked.connect( lambda: self.tableOnClicItemAction( self.ui.table_animTasks , self.id_rows_ani )  )
+        self.ui.table_assetsTasks.itemClicked.connect( lambda: self.tableOnClicItemAction( self.ui.table_assetsTasks , self.id_rows_ass )  )
+
+    def tableOnClicItemAction( self ,table, id_rows ):
+        column_idx = table.currentColumn()
+        row_idx = table.currentRow()
+        if column_idx ==  de.ISSUE_LINK_IDX :
+            item_na = self.t_fea.get_text_item_colum(table, de.ITEM_NA_IDX)
+            area = self.t_fea.get_text_item_colum(table, de.AREA_IDX)
+            link = de.JI_SERVER +'/browse/'+ id_rows[str(row_idx)][0]
+            webbrowser.open(link, new=2)
+        elif column_idx == de.COMMENT_IDX :
+            widget = comm.CommentsApp( mainApp = self.ui, issue_key = id_rows[str(row_idx)][0]  , dicc_comment_ls = id_rows[str(row_idx)][1])
+            widget.ui.show()
 
     def get_api_token_help(self):
         """Browse help for get jira api token
@@ -172,8 +189,8 @@ class MyMainWindow(QMainWindow):
             self.ui.lineEd_apiKey.setText('')
         hlp.metadata_dicc2json( de.TEMP_FOL+de.LOGIN_METADATA_FI_NA , dicc )
         #area_ls_ls = [ self.PROJ_SETTINGS['List']['area_assets_ls'] , self.PROJ_SETTINGS['List']['area_anim_ls'] ]
-        self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls'] , de.HEADER_ASS_LS)
-        self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS)
+        self.id_rows_ass = self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls'] , de.HEADER_ASS_LS)
+        self.id_rows_ani = self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS)
 
     def perf_combo_change_ac( self, signal ):
         """ComboB or other widget action triggered when user changes values perforce logging
@@ -269,24 +286,53 @@ class table_features( ):#QWidget ):
             table.setHorizontalHeaderItem( i,locals()["item"+ str(i)] )
             #self.tablaWidgShots.horizontalHeader().setFixedHeight(40)
         table.setColumnWidth( de.THUMB_IDX , de.width_as_thum )
-        self.id_rows = {}
-        for i, task in enumerate(tasks_ls_diccs):
+        id_rows = self.populate_loop( table ,tasks_ls_diccs ,HEADER_LS )
+        return id_rows
+
+    def populate_loop( self, table ,tasks_ls_diccs ,HEADER_LS ):
+        id_rows = {}
+        for i, task in enumerate( tasks_ls_diccs ):
+            per_row_ls = []
             table.setRowHeight(i, de.height_as_thum )
-            self.id_rows[str(i)] = task['Id']
+            #id_rows[ str(i) ]   =   [ task['Id'] ]
+            per_row_ls.append(  task['Id'] )
             item_thumb_path = self.thumb_local_path_item(  task, HEADER_LS )
             thumbMediaPath, thumb_fi_na = hlp.separate_path_and_na( item_thumb_path )
             if os.path.exists(thumbMediaPath+thumb_fi_na):
-                label_thumb = getThumbnClass( None,  thumbMediaPath+thumb_fi_na,  (de.width_as_thum , de.height_as_thum )   )
+                label_thumb = getThumbnClass( None,  thumbMediaPath+thumb_fi_na,  ( de.width_as_thum , de.height_as_thum )   )
                 table.setCellWidget( i , de.THUMB_IDX, label_thumb )
             for idx, column in enumerate ( HEADER_LS ):
                 try:
-                    item = QTableWidgetItem( str( task[column] ) )
-                    table.setItem(i ,idx, item)
-                    item.setTextAlignment(QtCore.Qt.AlignCenter)
-                    if idx ==  de.TITLE_IDX:
-                        item.setToolTip(str( task[ column ] ))
+                    item = self.create_table_item( table , str( task[column] ) , idx, i )  
                 except Exception as err:
-                    pass
+                    item = self.create_table_item( table , '     ' , idx, i ) 
+                if idx ==  de.TITLE_IDX:
+                    item.setToolTip(str( task[ column ] ))
+                elif idx ==  de.ISSUE_LINK_IDX:
+                    item = self.create_table_item( table , '     ' , idx, i )  
+                    label_link = getThumbnClass( None,  de.LINK_ICON_PATH,  ( de.width_as_thum , de.height_as_thum )   )
+                    table.setCellWidget( i , de.ISSUE_LINK_IDX, label_link )
+                elif idx ==  de.COMMENT_IDX:
+                    item = self.create_table_item( table , '     ' , idx, i ) 
+                    label_comment = getThumbnClass( None,  de.COMMENT_ICON_PATH,  ( de.width_as_thum , de.height_as_thum )   )
+                    table.setCellWidget( i , de.COMMENT_IDX, label_comment )
+                    per_row_ls.append( task[column] )
+                id_rows[ str(i) ]   =   per_row_ls
+        if 'asset' in table.objectName():
+            self.id_rows_ass = id_rows
+        elif 'anim' in table.objectName():
+            self.id_rows_ani = id_rows
+        return id_rows
+
+    def create_table_item( self, table ,text , idx, i ):
+        if text != '':
+            final_text = text
+        else:
+            final_text = '    '
+        item = QTableWidgetItem( final_text)
+        table.setItem(i ,idx, item)
+        item.setTextAlignment(QtCore.Qt.AlignCenter)
+        return item
 
     def generate_menu_dicc( self, signal ):
         """Generate a Dictionary Specifying with menu will be triggered depending column selection.
@@ -301,8 +347,8 @@ class table_features( ):#QWidget ):
                 dicc_menu_func [header+'_menu_func'] = self.status_menu_func
             elif header == de.thumbnail:
                 dicc_menu_func [header+'_menu_func'] = self.thumb_menu_func
-            elif header == de.spec:
-                dicc_menu_func [header+'_menu_func'] = self.issueLink_menu_func
+            #elif header == de.spec:
+            #    dicc_menu_func [header+'_menu_func'] = self.issueLink_menu_func
             elif header == de.asset_na:
                 dicc_menu_func [de.asset_na+'_menu_func'] = self.AssetName_na_menu_func
             elif header == de.ani_na:
@@ -326,8 +372,9 @@ class table_features( ):#QWidget ):
 
     def menu_initiates( self, HEADER_LS, table, dicc_menu_func, position):
         for header in HEADER_LS:
-            if table.horizontalHeaderItem( table.currentColumn()).text() == header:
-                dicc_menu_func[ header + '_menu_func']( table, position )
+            if header not in [ de.area , de.title , de.spec, de.comments ]:
+                if table.horizontalHeaderItem( table.currentColumn()).text() == header:
+                    dicc_menu_func[ header + '_menu_func']( table, position )
                 
     def initialized_features_table(self, table):
         """initialize table menues and actions.
@@ -344,10 +391,11 @@ class table_features( ):#QWidget ):
     def refresh_tables( self  ):
         """Refresh given tables
         """
+        id_rows_dicc_ls = [    self.id_rows_ass ,   self.id_rows_ani    ]
         area_ls_ls = [ self.PROJ_SETTINGS['List']['area_assets_ls'] , self.PROJ_SETTINGS['List']['area_anim_ls'] ]
         HEADER_LS_ls = [ de.HEADER_ASS_LS, de.HEADER_ANI_LS]
         for idx, table in enumerate([ self.table_assetsTasks, self.table_animTasks ]):
-            self.populate_table( table , area_ls_ls[ idx ] , HEADER_LS_ls[idx] )
+            id_rows_dicc_ls[ idx ] =  self.populate_table( table , area_ls_ls[ idx ] , HEADER_LS_ls[idx] )
 
     def get_text_item_colum( self, table , colum_idx):
         """Return the text value for t he current row and specified column index of  table.
@@ -523,7 +571,11 @@ class table_features( ):#QWidget ):
             statusAction = menu_status.addAction(str(status))
         actionStatus = menu_status.exec_(table.mapToGlobal(position))
         row = table.currentRow()
-        issue_key = self.id_rows[str(row)]
+        if 'asset' in table.objectName( ):
+            id_rows = self.id_rows_ass
+        elif 'anim' in table.objectName( ):
+            id_rows = self.id_rows_ani
+        issue_key = id_rows[str(row)][ 0 ]
         if actionStatus != None:
             dicc = self.jira_m.change_issue_status( issue_key, self.USER, de.JI_SERVER, self.APIKEY, actionStatus.text())
             if dicc[ de.key_errors ] != '[]':

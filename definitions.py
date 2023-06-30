@@ -27,6 +27,8 @@ JI_SERVER = "https://straykitestudios.atlassian.net" #"https://genvidtech.atlass
 JIRA_API_TOKEN_HELP = 'https://docs.searchunify.com/Content/Content-Sources/Atlassian-Jira-Confluence-Authentication-Create-API-Token.htm'
 TRACK_SHEET_ITEMS = 'https://docs.google.com/spreadsheets/d/1sy7NgFtjADYhvmU45rqlgfl4qznpW2adECWv892Ua-Q/edit?usp=sharing'
 INSTRUCTION_CHECK_ANIM_TOOL = 'https://docs.google.com/document/d/1gAxtH1fhukNAWPnWSfflYai9NQe0qsh6OVcnn7FzlKU/edit?usp=sharing'
+LINK_ICON_PATH =  PY2_PACKAGES.replace('\\','/')  + "/icon/link.png" 
+COMMENT_ICON_PATH =  PY2_PACKAGES.replace('\\','/')  + "/icon/comment.png" 
 ANIM_CHECK_TOOL_SETTING ='anim_check_settings.json'
 ANIM_PATH_TASK_CREAT = 'anim_path_creation_tool.json'
 LOGIN_METADATA_FI_NA ='login_metadata.json'
@@ -39,6 +41,7 @@ MANAGE_PROD_UI = 'management_tool.ui'
 TASK_CREATION_UI = 'task_creation_panel.ui'
 ANIM_CHECK_UI = 'checker_anim_tool.ui'
 ANIM_PATH_TREE_UI = 'anim_path_treel.ui'
+COMMENTS_UI = 'comments_panel.ui'
 FORBIDDEN_CHARS = [" ","-","_","@","%", "$","?", "!", "|","*",".",",",";"]
 
 ###########
@@ -59,7 +62,7 @@ GOOG_SH_ALPHA_LS =   ["A","B","C","D","E","F","G","H","I","J", "K","L","M","N","
 GOOG_SH_NUM_COL =[ 1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11, 12, 13, 14, 15, 16, 17,18, 19, 20, 21, 22, 23, 24, 25, 26]
 
 
-## asset table vars
+##  table vars
 assignee = 'Assignee'
 reporter = 'Reporter'
 id = 'Id'
@@ -76,6 +79,11 @@ thumbnail = 'Thumbnail'
 HEADER_ASS_LS = [ thumbnail , asset_na , area , title , spec, comments , status ]
 HEADER_ANI_LS = [ thumbnail , ani_na , area , title , spec, comments , status ]
 
+##### jira comments 
+comment_body = 'comm_body'
+comment_author = 'comm_author'
+comment_date = 'comm_date'
+
 ### check anim tool
 anim = 'Animation'
 maya = 'Maya'
@@ -89,6 +97,8 @@ ITEM_NA_IDX = 1
 AREA_IDX = 2
 TITLE_IDX = 3
 STATUS_IDX = 6
+ISSUE_LINK_IDX = 4
+COMMENT_IDX = 5
 
 width_as_thum = 100
 height_as_thum = 65

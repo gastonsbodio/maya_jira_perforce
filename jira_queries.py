@@ -85,6 +85,16 @@ class JiraQueries():
                     main_args_issue_dicc[de.assignee] = str(assignee)
                 main_args_issue_dicc[de.spec] = server +'/browse/'+str(issue.key)
                 main_args_issue_dicc[de.id] = str(issue.key)
+                comments_ls = jira.comments( issue ) 
+                comment_ls_of_dicc=[]
+                for comment in comments_ls:
+                    dicc = {}
+                    dicc[de.comment_body] = comment.body
+                    dicc[de.comment_author] = comment.author.displayName
+                    dicc[de.comment_date] = comment.created
+                    comment_ls_of_dicc.append( dicc )
+                main_args_issue_dicc[ de.comments ] = comment_ls_of_dicc
+                
                 issue_dicc_ls.append( main_args_issue_dicc )
             return issue_dicc_ls
         else:

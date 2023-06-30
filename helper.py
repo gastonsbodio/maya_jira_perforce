@@ -209,6 +209,13 @@ def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
             file = prefix + file
     return file
 
+def get_item_na_label(  HEADER_LS ):
+    if de.asset_na in HEADER_LS:
+        item_na = de.asset_na
+    elif de.asset_na in HEADER_LS:
+        item_na = de.ani_na
+    return item_na
+
 def get_google_doc_data( app, QMessageBox, gs ,sheet_na ,sheet_num):
     """read_google_sheet.
     """

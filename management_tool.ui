@@ -276,11 +276,11 @@
        <item>
         <widget class="QTabWidget" name="tabWid_tasks">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="anim_tab">
           <attribute name="title">
-           <string>Anims Tasks</string>
+           <string>             Anims Tasks             </string>
           </attribute>
           <widget class="QTableWidget" name="table_animTasks">
            <property name="geometry">
@@ -367,7 +367,7 @@ background-color: #ff5733;
          </widget>
          <widget class="QWidget" name="asset_tab">
           <attribute name="title">
-           <string>Assets Tasks</string>
+           <string>                Assets Tasks              </string>
           </attribute>
           <widget class="QTableWidget" name="table_assetsTasks">
            <property name="geometry">
