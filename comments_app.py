@@ -30,17 +30,21 @@ except Exception:
     importlib.reload(ev)
 
 class CommentsApp( QMainWindow ):
-    def __init__( self, mainApp = ev.getWindow( QWidget )  ,issue_key = '' ,dicc_comment_ls = [] ):
+    def __init__( self, mainApp = ev.getWindow( QWidget )  ,issue_key = '' , dicc_comment_ls = [] , area_ls = [] ,
+                    item_na = '' , area = '' ):
         super(CommentsApp, self).__init__( )
         loader = QUiLoader()
         uifile = QtCore.QFile( de.SCRIPT_FOL.replace('\\','/') +'/'+ de.COMMENTS_UI)
         uifile.open(QtCore.QFile.ReadOnly)
         self.ui = loader.load( uifile, mainApp )
         self.issue_key = issue_key
-        self.dicc_comment_ls = dicc_comment_ls
-        #print (  self.dicc_comment_ls  )
+        self.area_ls = area_ls
+        self.item_na = item_na
+        self.area = area
         self.initialize()
-        self.load_old_comments( )
+        dicc_comment_ls = self.get_refreshes_comment_dicc(  area_ls )
+        self.load_old_comments( dicc_comment_ls )
+        self.ui.pushBut_refresh.clicked.connect( lambda: self.get_task_values( self.area_ls ) )
 
     def initialize(self):
         """Initializing functions, var and features.
@@ -51,8 +55,9 @@ class CommentsApp( QMainWindow ):
         self.LOCAL_ROOT, self.DEPOT_ROOT = hlp.load_root_vars()
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
 
-    def load_old_comments( self ):
-        for dicc in self.dicc_comment_ls:
+    def load_old_comments( self , dicc_comment_ls):
+        self.ui.textBrow_comments.clear()
+        for dicc in dicc_comment_ls:
             text_body = dicc[de.comment_body]
             author = dicc[de.comment_author]
             date = dicc[de.comment_date]
@@ -62,6 +67,24 @@ class CommentsApp( QMainWindow ):
             self.ui.textBrow_comments.append( '-------------------------------------------------------' )
             self.ui.textBrow_comments.append( '-------------------------------------------------------' )
             
+    def get_refreshes_comment_dicc( self , area_ls ):
+        item_na_label = hlp.get_item_na_label(  self.area , self.PROJ_SETTINGS )
+        tasks_ls_diccs = hlp.get_self_tasks( self, QMessageBox , area_ls )
+        for task in tasks_ls_diccs:
+            if task[ de.area ] == self.area and task[ item_na_label ] == self.item_na :
+                dicc_comment_ls = task[ de.comments ]
+                break
+        return dicc_comment_ls 
+
+    def get_task_values( self , area_ls ):
+        dicc_comment_ls = self.get_refreshes_comment_dicc(  area_ls )
+        self.load_old_comments( dicc_comment_ls )
+
+    def add_comment( self,issue_key):
+        comment_body = str(  self.ui.textEd_new_comment.toPlainText())
+        if comment_body != '':
+            self.jira_m.add_comment( de.JI_SERVER , self.USER, self.APIKEY, issue_key , comment_body )
+
 
 if ev.ENVIROMENT == 'Windows':
     if __name__ == '__main__':

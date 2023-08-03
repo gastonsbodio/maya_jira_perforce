@@ -26,7 +26,7 @@ def make_read_writeable(filename):
     """
     os.chmod(filename, stat.S_IWRITE)
 
-def metadata_dicc2json(path, dicc):
+def metadata_dicc2json( path, dicc ):
     """Creates a json file from a givem dicctionary
     Args:
         path ([str]): [json file path ]
@@ -156,6 +156,23 @@ def fix_perf_mapped_root_path( path, proj_settings ):
     path_ = path.replace(    real_dp_fol_root+'/'+local_fol_root     ,   mapped_dp_fol_root    )
     return path_
 
+def is_local_fi_mod( local_mod_date , gdrive_mod_date ):
+    day_hour_ls = []
+    key_ = False
+    for day_hour in [local_mod_date , gdrive_mod_date ]:
+        day = day_hour.split('T')[0]
+        day = int(day.split('-')[0] + day.split('-')[1] + day.split('-')[2] )
+        day_hour_ls.append( day )
+        hour = day_hour.split('T')[-1]
+        hour = int(hour.split(':')[0] + hour.split(':')[1] + hour.split(':')[2] )
+        day_hour_ls.append( hour )
+    if day_hour_ls[0] > day_hour_ls[2]:
+        key_ = True
+    elif day_hour_ls[0] == day_hour_ls[2]:
+        if day_hour_ls[1] > day_hour_ls[3]:
+            key_ = True
+    return key_
+
 def go_2_perf_root_path( path, proj_settings , depot_root ):
     real_dp_fol_root = proj_settings['KEYWORDS']['real_depot_fol_root']
     mapped_dp_fol_root = proj_settings['KEYWORDS']['maped_depot_fol_root']
@@ -209,10 +226,10 @@ def only_name_out_extention( file_path , with_prefix = True, prefix = '' ):
             file = prefix + file
     return file
 
-def get_item_na_label(  HEADER_LS ):
-    if de.asset_na in HEADER_LS:
+def get_item_na_label(  area , PROJ_SETTINGS ):
+    if area in PROJ_SETTINGS['List']['area_assets_ls']:
         item_na = de.asset_na
-    elif de.asset_na in HEADER_LS:
+    elif area  in PROJ_SETTINGS['List']['area_anim_ls']:  
         item_na = de.ani_na
     return item_na
 
@@ -432,7 +449,7 @@ def write_goo_sheet_request( line, if_result, result_fi_na , GOOGLE_SHET_DATA_NA
         file_content = file_content +'    fileFa.close()\n'
     return file_content
 
-def write_down_tools():
+def write_googld_func( func_na, result_fi_na, if_result):
     """Specific Google Drive command, will be the content on a python file.
         not possible to run Google Drive commands when you launch Maya with Gearbox launcher.
     Returns:
@@ -440,15 +457,35 @@ def write_down_tools():
     """
     file_content =                'import sys\n'
     file_content = file_content + 'sys.path.append( "%s")\n' %de.SCRIPT_FOL
-
+    file_content = file_content + 'import json\n'
     file_content = file_content +'for path in sys.path:\n'
     file_content = file_content +'    if "Maya2020" in path or "Maya2021" in path or "Maya2022" in path or "Maya2023" in path:\n'
     file_content = file_content +'        sys.path.remove(path)\n'
+
+    file_content = file_content + 'error_ls = []\n'
+    file_content = file_content + '%s = []\n' %de.ls_result
+    file_content = file_content + 'try:\n'
+    file_content = file_content + '    import google_sheet_request as gs\n'
+    file_content = file_content + '    reload( gs )\n'
+    file_content = file_content + '    goo_dri = gs.GoogleDriveQuery()\n'
+    file_content = file_content + '    %s = goo_dri.%s\n' %( de.ls_result , func_na ) #update_tools
+
+    file_content = file_content + 'except Exception as err:\n'
+    file_content = file_content + '    error_ls = ["G Sheet Error"]\n'
+    file_content = file_content + '    error_ls.append(err)\n'
+    file_content = file_content + '    print( err )\n'
+    if if_result:
+        file_content = file_content + de.dicc_result +' = {}\n'
+        file_content = file_content + de.dicc_result + '["'+ de.ls_result +'"] = '+ de.ls_result+'\n'
+        file_content = file_content + de.dicc_result + '["'+ de.key_errors +'"] = error_ls\n'
+        file_content = file_content +'json_object = json.dumps( {dicc_result}, indent = 2 )\n'.format( dicc_result = de.dicc_result ) 
+        file_content = file_content + 'with open( "{path}", "w") as fileFa:\n'.format( path = de.PY_PATH + result_fi_na )
+        file_content = file_content +'    fileFa.write( str(json_object) )\n'
+        file_content = file_content +'    fileFa.close()\n'
+    return file_content
     
-    file_content = file_content + 'import google_sheet_request as gs\n'
-    file_content = file_content + 'reload( gs )\n'
-    file_content = file_content + 'goo_dri = gs.GoogleDriveQuery()\n'
-    file_content = file_content + 'goo_dri.update_tools()\n'
+    
+    
     return file_content
 
 def create_python_file( python_file_na, python_file_content ):
@@ -663,3 +700,21 @@ def jira_creation_task_issue( app ,QMessageBox ,issue_type ,assign_user_id , ite
         key = set_issue_label( app,  QMessageBox ,label_ls, issue_key  , app.jira_m)
         if key:
             return  goo_colum , value_ls
+
+def get_self_tasks( app , QMessageBox , area_ls ):
+    """Query Jira for get own assigned issues.
+    Returns:
+        [ls]: [list of jira issues]
+    """
+    if app.PROJECT_KEY != '' and app.PROJECT_KEY != 'None':
+        if app.APIKEY != 'None' and app.USER != 'None':
+            dicc = app.jira_m.get_custom_user_issues(app.USER, de.JI_SERVER, app.APIKEY, 'assignee', app.PROJECT_KEY , 'jira'  )
+            if dicc[ de.key_errors ] != '[]':
+                QMessageBox.information(app.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
+        filtered_tasks_ls = []
+        for task_dicc in dicc[de.ls_ji_result]:
+            if task_dicc[ de.area ] in area_ls:
+                filtered_tasks_ls.append( task_dicc )
+        return  filtered_tasks_ls
+    else:
+        return []

@@ -27,7 +27,7 @@ def launch_manager():
     widget = jiraM.MyMainWindow()
     widget.ui.show()
 def update_tools():
-    file_content = hlp.write_down_tools ( )
+    file_content = hlp.write_googld_func ( 'update_tools' )
     hlp.create_python_file ('update_tools', file_content)
     hlp.run_py_stand_alone( 'update_tools', True)
 

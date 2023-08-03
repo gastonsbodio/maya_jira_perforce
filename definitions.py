@@ -52,6 +52,7 @@ FORBIDDEN_CHARS = [" ","-","_","@","%", "$","?", "!", "|","*",".",",",";"]
 GOOGLE_SHET_DATA_NA = "jira_manager_data"
 GOOGLE_SHET_ANIM_CHECK = "Task_001"
 GOOG_CONTENT_TOOLS_FOL = "jira_manager"
+STU_LIB_FOL_NA = "studiolibrary-2.9.11"
 GOOGLE_SH_ASS_NA_COL = "asset_name"
 GOOGLE_SH_ANI_NA_COL = "anim_name"
 GOOGLE_SH_CREAT_AREA_COL = 'created_area'

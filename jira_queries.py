@@ -279,6 +279,21 @@ class JiraQueries():
             os.remove ( de.PY_PATH  + 'get_projects.py' )
             return dicc
 
+
+    def add_comment(self, server, MASTER_USER, MASTER_API_KEY, issue_key , comment_body , pyStAl= True):
+        if pyStAl == False:
+            jira = self.jira_connection( MASTER_USER, server, MASTER_API_KEY )
+            comment_to_edit = jira.add_comment( issue_key , comment_body )
+            #comment_to_edit.update(body='New Content.')
+        else:
+            line = 'jira.add_comment( "%s" , "%s" )' %( issue_key , comment_body )
+            file_content = hlp.write_jira_command_file ( line , True, 'add_comment.json', MASTER_USER, server, MASTER_API_KEY )
+            hlp.create_python_file ('add_comment', file_content)
+            hlp.run_py_stand_alone( 'add_commentin' )
+            dicc = hlp.json2dicc_load( de.PY_PATH  + 'add_comment.json')
+            return dicc
+
+
     def set_label(self, issue_key, text, user ,server , apikey , pyStAl= True):
         """Tagger for create labels on issues for storage data.
         Args:

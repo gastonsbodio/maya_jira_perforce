@@ -95,19 +95,20 @@ class MyMainWindow(QMainWindow):
         self.t_fea.initialized_features_table(self.ui.table_animTasks)
         self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables( )  )
         self.ui.actionGet_Jira_Api_Key.triggered.connect( lambda:  self.get_api_token_help( )  )
-        self.ui.table_animTasks.itemClicked.connect( lambda: self.tableOnClicItemAction( self.ui.table_animTasks , self.id_rows_ani )  )
-        self.ui.table_assetsTasks.itemClicked.connect( lambda: self.tableOnClicItemAction( self.ui.table_assetsTasks , self.id_rows_ass )  )
+        self.ui.table_animTasks.itemClicked.connect( lambda: self.tableOnClicItemAction( self.ui.table_animTasks , self.id_rows_ani  , self.PROJ_SETTINGS['List']['area_anim_ls'] )       )
+        self.ui.table_assetsTasks.itemClicked.connect( lambda: self.tableOnClicItemAction( self.ui.table_assetsTasks , self.id_rows_ass , self.PROJ_SETTINGS['List']['area_assets_ls']  )  )
 
-    def tableOnClicItemAction( self ,table, id_rows ):
+    def tableOnClicItemAction( self ,table, id_rows ,area_ls):
         column_idx = table.currentColumn()
         row_idx = table.currentRow()
+        item_na = self.t_fea.get_text_item_colum(table, de.ITEM_NA_IDX)
+        area = self.t_fea.get_text_item_colum(table, de.AREA_IDX)
         if column_idx ==  de.ISSUE_LINK_IDX :
-            item_na = self.t_fea.get_text_item_colum(table, de.ITEM_NA_IDX)
-            area = self.t_fea.get_text_item_colum(table, de.AREA_IDX)
             link = de.JI_SERVER +'/browse/'+ id_rows[str(row_idx)][0]
             webbrowser.open(link, new=2)
         elif column_idx == de.COMMENT_IDX :
-            widget = comm.CommentsApp( mainApp = self.ui, issue_key = id_rows[str(row_idx)][0]  , dicc_comment_ls = id_rows[str(row_idx)][1])
+            widget = comm.CommentsApp( mainApp = self.ui, issue_key = id_rows[str(row_idx)][0]  , dicc_comment_ls = id_rows[str(row_idx)][1]   ,
+                                        area_ls = area_ls  , item_na = item_na ,  area = area)
             widget.ui.show()
 
     def get_api_token_help(self):
@@ -234,23 +235,6 @@ class table_features( ):#QWidget ):
         self.dicc_menu_ani_func = self.generate_menu_dicc( de.ani_na )
         self.dicc_menu_ass_func = self.generate_menu_dicc( de.asset_na )
     
-    def get_self_tasks( self , area_ls ):
-        """Query Jira for get own assigned issues.
-        Returns:
-            [ls]: [list of jira issues]
-        """
-        if self.PROJECT_KEY != '' and self.PROJECT_KEY != 'None':
-            if self.APIKEY != 'None' and self.USER != 'None':
-                dicc = self.jira_m.get_custom_user_issues(self.USER, de.JI_SERVER, self.APIKEY, 'assignee', self.PROJECT_KEY , 'jira'  )
-                if dicc[ de.key_errors ] != '[]':
-                    QMessageBox.information(self.main_widg, u'getting user task errors', str( dicc[de.key_errors] )  )
-            filtered_tasks_ls = []
-            for task_dicc in dicc[de.ls_ji_result]:
-                if task_dicc[ de.area ] in area_ls:
-                    filtered_tasks_ls.append( task_dicc )
-            return  filtered_tasks_ls
-        else:
-            return []
 
     def thumb_local_path_item( self , task, HEADER_LS ):
         if HEADER_LS [de.ITEM_NA_IDX ] == de.asset_na:
@@ -275,7 +259,7 @@ class table_features( ):#QWidget ):
         self.PROJ_SETTINGS = hlp.get_yaml_fil_data( de.SCRIPT_FOL +'\\' + self.PROJECT_KEY + de.SETTINGS_SUFIX )
         table.clear()
         try:
-            tasks_ls_diccs = self.get_self_tasks(  area_ls )
+            tasks_ls_diccs = hlp.get_self_tasks( self, QMessageBox , area_ls )
             if self.PROJ_SETTINGS['KEYWORDS']['anim'] in area_ls:
                 self.tasks_ls_ani_diccs = tasks_ls_diccs
         except Exception as err:
