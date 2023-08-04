@@ -267,7 +267,7 @@ class GoogleDriveQuery():
             onlyPath = pathAlone
         return onlyPath
 
-    def subir_archivo(self, credenciales, ruta_archivo, id_folder):
+    def upload_file(self, credenciales, ruta_archivo, id_folder):
         try:
             drive ='drive#fileLink'
             archivo = credenciales.CreateFile({'parents':[{'kind': drive , 'id': id_folder}] })
@@ -441,11 +441,13 @@ class GoogleDriveQuery():
             print('try warning listing children')
         return files_good_children_ls
 
-    def upload_custom_files (self, tuplaPaths, projRootName):
+    def upload_custom_files (self, tuplaPaths, projRootName, stulib_local_root_fol):
         projName = projRootName.split('/')[-1]
         uploadMessLs = []
         credenciales = self.login()
-        for fi in tuplaPaths:
+        for file in tuplaPaths:
+            fi_local = file
+            fi = file.replace( stulib_local_root_fol+'/', projRootName+'/')
             name =str(fi.split('/')[-1])
             doneLlist = []
             name=fi.split('/')[-1]
@@ -459,44 +461,40 @@ class GoogleDriveQuery():
             if files_good_children_ls != [] :
                 print ('Updating Created file on cloud...')
                 keyFind = False
-                keyFind, doneLlist, uploadMessLs = self.loop_upload( fi ,files_good_children_ls, doneLlist, uploadMessLs , keyFind )
+                keyFind, doneLlist, uploadMessLs = self.loop_upload( fi, fi_local ,files_good_children_ls, 
+                                                doneLlist, uploadMessLs , keyFind ,credenciales, projRootName)
             else:
                 print ('Creating file...')
                 if fi not in uploadMessLs:
                     fatherID = self.createPathGooD( credenciales, fi, projRootName)
-                    self.subir_archivo( credenciales, fi, fatherID)
+                    self.upload_file( credenciales, fi_local, fatherID)
                     print ('  --  --  --  --  --  --  ')
-                    print (' Uploading:   ' + str (fi))
+                    print (' Uploading:   ' + str (fi_local))
                     print ("  ")
                     uploadMessLs.append(fi)
                 else:
                     if fi not in uploadMessLs:
                         uploadMessLs.append(fi)
 
-    def loop_upload(self, fi ,fileGoo, doneLlist, uploadMessLs, keyFind ):
-        for gooObj in fileGoo:
+    def loop_upload(self, fi ,fi_local ,filesGoo_ls, doneLlist, uploadMessLs, keyFind ,credenciales, projRootName):
+        for gooObj in filesGoo_ls:
             if gooObj not in doneLlist:
                 if fi not in uploadMessLs:
                     keyFind = True
                     fechaModGoogFi = gooObj['modifiedDate'].split(".")[0]
-                    #fechaModGoogFi = self.timeFixer(fechaModGoogFi,3)
-                    fecha =time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fi)))
-                    hora = time.ctime(os.path.getmtime(fi))
+                    fecha =time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fi_local)))
+                    hora = time.ctime(os.path.getmtime(fi_local))
                     hora = hora.split(" ")[-2]
                     fechaLocalFi = fecha + "T" + hora
-                    gooObj.SetContentFile(fi)
+                    gooObj.SetContentFile( fi_local )
                     gooObj.Upload()
                     doneLlist.append(fi)
                     print (fechaLocalFi)
                     print ('Local Date')
                     print (fechaModGoogFi)
                     print ('GoogleD Date')
-                    #print (' . . . . . . . . ')
-                    #print ('  --  --  --  --  --  --  ')
-                    print (' Uploading:   ' + str (fi))
-                    #print ('  ')
+                    print (' Uploading:   ' + str (fi_local))
                     uploadMessLs.append(fi)
-                    fileGoo = []
                     break
                 else:
                     if fi not in uploadMessLs:
@@ -507,9 +505,9 @@ class GoogleDriveQuery():
         if keyFind == False:
             if fi not in uploadMessLs:
                 fatherID = self.createPathGooD( fi, projRootName)
-                self.subir_archivo( credenciales, fi, fatherID)
+                self.upload_file( credenciales, fi_local, fatherID)
                 print ('  --  --  --  --  --  --  ')
-                print (' Uploading:   ' + str (fi))
+                print (' Uploading:   ' + str (fi_local))
                 print ("  ")
                 uploadMessLs.append(fi)
             else:
@@ -567,10 +565,10 @@ class GoogleDriveQuery():
             partesFecha[0] = '0'+ str(partesFecha[0])
         return str(partesFecha[0]) + '-' + str(partesFecha[1]) + '-' + str(partesFecha[2]) + 'T'+ str(partesHora[0]) + ':' + str(partesHora[1]) + ':' + str(partesHora[2])
 
-
-    def check_local_cloud_date( self, local_file_path ,projName):
+    def check_local_cloud_date( self, local_file_path , projName , stulib_local_root_fol):
         credenciales = self.login()
         local_path, local_name = hlp.separate_path_and_na( local_file_path )
+        local_path = local_path.replace( stulib_local_root_fol+'/' , projName+'/' )
         onlyPath = self.strip_bar( local_path )
         tuplas = self.builtPathSinceRoot ( onlyPath, projName, credenciales)
         if tuplas != False:
