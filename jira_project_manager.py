@@ -89,8 +89,12 @@ class MyMainWindow(QMainWindow):
         self.ui.lineEd_perforce_user.setText( self.PERF_USER )
         self.ui.lineEd_perf_worksp.setText( self.PERF_WORKSPACE  )
         self.t_fea = table_features( self.ui.table_assetsTasks , self.ui.table_animTasks , main_widg = self )
-        self.id_rows_ass = self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls']  , de.HEADER_ASS_LS)
-        self.id_rows_ani = self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS )
+        if self.PROJ_SETTINGS != None:
+            self.id_rows_ass = self.t_fea.populate_table( self.ui.table_assetsTasks, self.PROJ_SETTINGS['List']['area_assets_ls']  , de.HEADER_ASS_LS)
+            self.id_rows_ani = self.t_fea.populate_table( self.ui.table_animTasks, self.PROJ_SETTINGS['List']['area_anim_ls']  , de.HEADER_ANI_LS )
+        else:
+            self.id_rows_ass = {}
+            self.id_rows_ani = {}
         self.t_fea.initialized_features_table(self.ui.table_assetsTasks)
         self.t_fea.initialized_features_table(self.ui.table_animTasks)
         self.ui.pushBut_reload_tables.clicked.connect( lambda: self.t_fea.refresh_tables( )  )
@@ -621,7 +625,6 @@ elif str(sys.version).startswith('3'):
 			Thread.__init__(self, group, target, name, args, kwargs)
 			self._return = None
 		def run(self):
-			print(type(self._target))
 			if self._target is not None:
 				self._return = self._target(*self._args,
 													**self._kwargs)
