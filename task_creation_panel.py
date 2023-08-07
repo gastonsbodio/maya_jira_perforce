@@ -115,6 +115,8 @@ class TaskCreationPanel(QMainWindow):
         """
         self.ui.comboBuser_4_assign.clear()
         dicc = self.jira_m.get_assignable_users( de.JI_SERVER ,self.PROJECT_KEY ,self.USER , self.APIKEY )
+        if 'dict' in str(type(dicc)):
+            dicc = []
         self.dicc_users_id = {}
         for d in ['None'] + dicc:
             try:
@@ -135,13 +137,14 @@ class TaskCreationPanel(QMainWindow):
     def load_area_combo(self):
         """populate area combob.
         """
-        list_ = [     self.PROJ_SETTINGS ['KEYWORDS']['mod']   ,    self.PROJ_SETTINGS ['KEYWORDS']['rig']    ,
-                    self.PROJ_SETTINGS ['KEYWORDS']['text']    ,  self.PROJ_SETTINGS ['KEYWORDS']['anim']   ]
-        self.ui.comboB_item_area_tag.clear()
-        self.ui.comboB_item_area.clear()
-        for item in list_:
-            self.ui.comboB_item_area_tag.addItem( item )
-            self.ui.comboB_item_area.addItem( item )
+        if self.PROJ_SETTINGS != None: 
+            list_ = [     self.PROJ_SETTINGS ['KEYWORDS']['mod']   ,    self.PROJ_SETTINGS ['KEYWORDS']['rig']    ,
+                        self.PROJ_SETTINGS ['KEYWORDS']['text']    ,  self.PROJ_SETTINGS ['KEYWORDS']['anim']   ]
+            self.ui.comboB_item_area_tag.clear()
+            self.ui.comboB_item_area.clear()
+            for item in list_:
+                self.ui.comboB_item_area_tag.addItem( item )
+                self.ui.comboB_item_area.addItem( item )
 
     def get_google_asset_and_anims(self):
         self.asset_tracked_ls_diccs = hlp.get_google_doc_data( self, QMessageBox , gs , de.GOOGLE_SHET_DATA_NA ,
