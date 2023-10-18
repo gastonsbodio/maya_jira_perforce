@@ -71,10 +71,13 @@ def load_anim_check_vars( QMessageBox, app ):
     """
     dicc = json2dicc_load( de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING )
     if dicc != {}:
-        GOOG_DOC_NA      = str( dicc['sheet_na'] )
         try:
-            SHEET_NA         = str( dicc['form_na'] )
-        except Exception:
+            GOOG_DOC_NA      = str( dicc['docu_na'] )
+            SHEET_NA         = str( dicc['sheet_na'] )
+        except Exception as err:
+            print ( err)
+            GOOG_DOC_NA = ''
+            SHEET_NA = ''
             QMessageBox.information(app, u'Googlesheet error.', 'PLease, delete: '+de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING +"""   
                                     and fill settings again
                                     """)
