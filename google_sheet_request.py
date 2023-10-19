@@ -587,3 +587,23 @@ class GoogleDriveQuery():
         else:
             return 'goog_fi_unexistence'
 
+    def list_content_folder( self, folder, stulib_local_root_fol , pose_json, anim_root ):
+        credenciales = self.login()
+        top_folders = credenciales.ListFile({'q': "'root' in parents and trashed=false and title='%s'" %folder}).GetList()
+        for goog_fol in top_folders:
+                tool_fi_ls = self.listContentFold( credenciales, goog_fol['id'])
+                pose_json_ls = []
+                for goo_fi in tool_fi_ls:
+                    if goo_fi['title'] == pose_json:
+                        pose_json_ls.append( goo_fi )
+                        full_path_name = self.buildPathGooD( credenciales, [ goo_fi ] )
+                        print( goo_fi['title'] )
+                        print( anim_root )
+                        cloud_date =  goo_fi['modifiedDate'] 
+                        local_path = full_path_name[0].replace( folder+'/', stulib_local_root_fol+'/' )
+                        pre_roo = anim_root.split(stulib_local_root_fol)[0]
+                        print( pre_roo )
+                        print( 'pre_roo')
+                        full_local_path = pre_roo + local_path
+                        print( full_local_path )
+                        print('bla')

@@ -161,7 +161,8 @@ class AnimCheckerApp(QMainWindow):
         
     def set_settings(self):
         dicc = {}
-        dicc['sheet_na'] =  str( self.ui.lineEd_google_sheet_na.text() ) 
+        dicc['docu_na'] =  str( self.ui.lineEd_google_sheet_na.text() )
+        dicc['sheet_na'] =  str( self.ui.lineEd_sheet_na.text() ) 
         dicc['depot_a_root'] = hlp.format_path( str( self.ui.lineEd_depot_anim_root.text() ) )
         dicc['unreal_a_root'] = hlp.format_path( str(self.ui.lineEd_unreal_anim_root.text() ) )
         hlp.metadata_dicc2json( de.TEMP_FOL+de.ANIM_CHECK_TOOL_SETTING , dicc )
